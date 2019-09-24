@@ -14,6 +14,8 @@ module.exports = {
   ],
   'rules': {
     'import/prefer-default-export': 'off',
+    'no-useless-constructor': 'off',
+    'no-nested-ternary': 'off',
     'no-undef': 'off',
     "@typescript-eslint/no-unused-vars": "warn",
     'prettier/prettier': 'error',
