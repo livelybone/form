@@ -1,6 +1,6 @@
 {
   "name": "@livelybone/form",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "A cross-framework form management library, realized validate, format, reset, submit",
   "main": "./lib/umd/index.js",
   "module": "./lib/es/index.js",

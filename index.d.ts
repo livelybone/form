@@ -158,12 +158,16 @@ declare class Form<
     options?: FormOptions<FormDataType, ReturnTypeOfSubmit | FormDataType>,
   )
 
-  /**
-   * @desc 校验与参数 field 对应的表单项
-   *
-   * @desc Validate the value of the form item that matched the param `field`
-   * */
-  itemValidate: (field: TupleToUnion) => string
+  getItem: (
+    field: TupleToUnion,
+  ) =>
+    | FormItem<
+        TupleToUnion,
+        TupleToUnion & {
+          id: DFieldType
+        }
+      >
+    | undefined
 
   /**
    * @desc 更新与参数 field 对应的表单项的值
@@ -171,6 +175,13 @@ declare class Form<
    * @desc Update the value of the form item that matched the param `field`
    * */
   itemChange: (field: TupleToUnion, value: TupleToUnion) => void
+
+  /**
+   * @desc 校验与参数 field 对应的表单项
+   *
+   * @desc Validate the value of the form item that matched the param `field`
+   * */
+  itemValidate: (field: TupleToUnion) => string
 
   /**
    * @desc 校验整个表单，更新表单实例属性：valid, pristine, errorText, data, items
@@ -225,15 +236,15 @@ declare class Form<
    * @param [field]            If `!!field === true`, it will clear the validate result of the form item that matched the param field
    *                           else, if will clear the validate result of the form
    * */
-  clearValidateResult(field?: GetFieldType<FormItems>): void
+  clearValidateResult: (field?: TupleToUnion | undefined) => void
 }
 
-declare class FormItemsManagement<
+declare class FormItemsManager<
   FormItems extends {
     [id: string]: FormItem<any, any>
   }
 > {
-  private allItems
+  private readonly allItems
 
   constructor(formItems: FormItems)
 
@@ -261,7 +272,7 @@ export {
   Form,
   FormItem,
   FormItemsData,
-  FormItemsManagement,
+  FormItemsManager,
   FormOptions,
   GetFieldType,
   GetIdType,
