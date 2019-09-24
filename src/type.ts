@@ -64,9 +64,18 @@ export interface FormItem<
 }
 
 export interface FormOptions<DT extends {}, ST extends any> {
-  onSubmit(data: DT): Promise<ST>
+  onSubmit?(data: DT): Promise<ST>
 
   initialValues?: DT
+
+  /**
+   * formValidate 方法的 validateAll 参数的默认值
+   *
+   * The default value of param validateAll of method formValidate
+   *
+   * Default: true
+   * */
+  validateAll?: boolean
 }
 
 export type TupleToUnion<T, K extends string> = T extends Array<
