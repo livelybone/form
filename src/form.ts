@@ -3,11 +3,10 @@ import {
   FormItem,
   FormItemsData,
   FormOptions,
-  GetFieldType,
-  GetValueType,
   Pristine,
   Valid,
   ValidateTiming,
+  TupleToUnion,
 } from './type'
 import { clearValidateRes, init, itemValidate } from './utils'
 
@@ -27,8 +26,8 @@ export class Form<
    * */
   readonly items!: Array<
     FormItem<
-      GetValueType<FormItems>,
-      GetFieldType<FormItems> & { id: string | number }
+      TupleToUnion<FormItems, 'value'>,
+      TupleToUnion<FormItems, 'field'> & { id: string | number }
     >
   >
 
@@ -63,7 +62,7 @@ export class Form<
     }
   }
 
-  getItem = (field: GetFieldType<FormItems>) => {
+  getItem = (field: TupleToUnion<FormItems, 'field'>) => {
     return this.items.find(item => item.field === field)
   }
 
@@ -73,8 +72,8 @@ export class Form<
    * @desc Update the value of the form item that matched the param `field`
    * */
   itemChange = (
-    field: GetFieldType<FormItems>,
-    value: GetValueType<FormItems>,
+    field: TupleToUnion<FormItems, 'field'>,
+    value: TupleToUnion<FormItems, 'value'>,
   ): void => {
     const item = this.getItem(field)
     if (item) {
@@ -96,7 +95,7 @@ export class Form<
    *
    * @desc Validate the value of the form item that matched the param `field`
    * */
-  itemValidate = (field: GetFieldType<FormItems>): ErrorText => {
+  itemValidate = (field: TupleToUnion<FormItems, 'field'>): ErrorText => {
     const item = this.getItem(field)
     if (item) return itemValidate(this, item)
     return 'The field isn\'t exist in this form'
@@ -165,8 +164,8 @@ export class Form<
    * @param value              Default: this.options.initialValues[field]
    * */
   resetItem = (
-    field: GetFieldType<FormItems>,
-    value: GetValueType<FormItems> = this.options.initialValues[field],
+    field: TupleToUnion<FormItems, 'field'>,
+    value: TupleToUnion<FormItems, 'value'> = this.options.initialValues[field],
   ): void => {
     const item = this.getItem(field)
     if (item) {
@@ -185,7 +184,7 @@ export class Form<
    * @param [field]            If `!!field === true`, it will clear the validate result of the form item that matched the param field
    *                           else, if will clear the validate result of the form
    * */
-  clearValidateResult = (field?: GetFieldType<FormItems>): void => {
+  clearValidateResult = (field?: TupleToUnion<FormItems, 'field'>): void => {
     if (field) {
       const item = this.getItem(field)
       if (item) {

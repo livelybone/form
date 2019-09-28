@@ -103,23 +103,8 @@ export type TupleToUnion<T, K extends string> = T extends Array<
   ? E
   : never
 
-export type GetFieldType<FormItems extends FormItem<any, any>[]> = TupleToUnion<
-  FormItems,
-  'field'
->
-export type GetValueType<FormItems extends FormItem<any, any>[]> = TupleToUnion<
-  FormItems,
-  'value'
->
-
-export type NonUnknown<T> = T extends unknown ? never : T
-
-export type GetIdType<FormItems extends FormItem<any, any>[]> =
-  | NonUnknown<TupleToUnion<FormItems, 'id'>>
-  | GetFieldType<FormItems>
-
 export type FormItemsData<
   FormItems extends FormItem<DValueType, DFieldType>[]
 > = {
-  [k in GetFieldType<FormItems>]: GetValueType<FormItems>
+  [k in TupleToUnion<FormItems, 'field'>]: TupleToUnion<FormItems, 'value'>
 }

@@ -98,20 +98,10 @@ declare type TupleToUnion<T, K extends string> = T extends Array<
 >
   ? E
   : never
-declare type GetFieldType<
-  FormItems extends FormItem<any, any>[]
-> = TupleToUnion<FormItems, 'field'>
-declare type GetValueType<
-  FormItems extends FormItem<any, any>[]
-> = TupleToUnion<FormItems, 'value'>
-declare type NonUnknown<T> = T extends unknown ? never : T
-declare type GetIdType<FormItems extends FormItem<any, any>[]> =
-  | NonUnknown<TupleToUnion<FormItems, 'id'>>
-  | GetFieldType<FormItems>
 declare type FormItemsData<
   FormItems extends FormItem<DValueType, DFieldType>[]
 > = {
-  [k in GetFieldType<FormItems>]: GetValueType<FormItems>
+  [k in TupleToUnion<FormItems, 'field'>]: TupleToUnion<FormItems, 'value'>
 }
 
 declare class Form<
@@ -128,8 +118,8 @@ declare class Form<
    * */
   readonly items: Array<
     FormItem<
-      GetValueType<FormItems>,
-      GetFieldType<FormItems> & {
+      TupleToUnion<FormItems, 'value'>,
+      TupleToUnion<FormItems, 'field'> & {
         id: string | number
       }
     >
@@ -159,11 +149,11 @@ declare class Form<
   )
 
   getItem: (
-    field: TupleToUnion,
+    field: TupleToUnion<FormItems, 'field'>,
   ) =>
     | FormItem<
-        TupleToUnion,
-        TupleToUnion & {
+        TupleToUnion<FormItems, 'value'>,
+        TupleToUnion<FormItems, 'field'> & {
           id: DFieldType
         }
       >
@@ -174,14 +164,17 @@ declare class Form<
    *
    * @desc Update the value of the form item that matched the param `field`
    * */
-  itemChange: (field: TupleToUnion, value: TupleToUnion) => void
+  itemChange: (
+    field: TupleToUnion<FormItems, 'field'>,
+    value: TupleToUnion<FormItems, 'value'>,
+  ) => void
 
   /**
    * @desc 校验与参数 field 对应的表单项
    *
    * @desc Validate the value of the form item that matched the param `field`
    * */
-  itemValidate: (field: TupleToUnion) => string
+  itemValidate: (field: TupleToUnion<FormItems, 'field'>) => string
 
   /**
    * @desc 校验整个表单，更新表单实例属性：valid, pristine, errorText, data, items
@@ -226,7 +219,10 @@ declare class Form<
    * @param field
    * @param value              Default: this.options.initialValues[field]
    * */
-  resetItem: (field: TupleToUnion, value?: TupleToUnion) => void
+  resetItem: (
+    field: TupleToUnion<FormItems, 'field'>,
+    value?: TupleToUnion<FormItems, 'value'>,
+  ) => void
 
   /**
    * @desc 清除表单/表单项的校验结果
@@ -236,7 +232,9 @@ declare class Form<
    * @param [field]            If `!!field === true`, it will clear the validate result of the form item that matched the param field
    *                           else, if will clear the validate result of the form
    * */
-  clearValidateResult: (field?: TupleToUnion | undefined) => void
+  clearValidateResult: (
+    field?: TupleToUnion<FormItems, 'field'> | undefined,
+  ) => void
 }
 
 declare class FormItemsManager<
@@ -274,10 +272,6 @@ export {
   FormItemsData,
   FormItemsManager,
   FormOptions,
-  GetFieldType,
-  GetIdType,
-  GetValueType,
-  NonUnknown,
   Pristine,
   TupleToUnion,
   Valid,
