@@ -37,7 +37,7 @@ npm i -S @livelybone/form
 `Form`
 
 ## Interface
-See in [index.d.ts](./index.d.ts)
+See what method or params you can use in [index.d.ts](./index.d.ts)
 
 ## Usage
 

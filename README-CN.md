@@ -7,7 +7,7 @@
 
 > `pkg.module supported`, 天然支持 tree-shaking, 使用 es module 引用即可
 
-[En Doc](./README.md)
+[English Document](./README.md)
 
 一个跨平台的表单管理工具，可以应用于 React, Vue, React Native, Angular... 实现表单验证, 值的格式化, 表单重置, 表单提交
 
@@ -35,7 +35,7 @@ npm i -S @livelybone/form
 `Form`
 
 ## Interface
-去 [index.d.ts](./index.d.ts) 查看配置项
+去 [index.d.ts](./index.d.ts) 查看可用方法和参数
 
 ## Usage
 
