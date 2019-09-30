@@ -112,7 +112,7 @@ form.reset()
 form.resetItem('amount')
 ```
 
-在 HTML 文件中直接饮用，你可以在 [CDN: unpkg](https://unpkg.com/@livelybone/form/lib/umd/) 看到你能用到的所有 js 脚本
+在 HTML 文件中直接引用，你可以在 [CDN: unpkg](https://unpkg.com/@livelybone/form/lib/umd/) 看到你能用到的所有 js 脚本
 ```html
 <-- 然后使用你需要的 -->
 <script src="https://unpkg.com/@livelybone/form/lib/umd/<--module-->.js"></script>
