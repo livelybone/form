@@ -1,19 +1,6 @@
 export type ErrorText = string
 
 /**
- * 校验函数触发的时机
- *
- * Timing of calling validator
- * */
-export enum ValidateTiming {
-  OnChange = 0,
-  OnBlur = 1,
-}
-
-export type DValueType = string | number | boolean
-export type DFieldType = string | number
-
-/**
  * 表示表单/表单项是否被修改，true - 未被修改过，false - 已被修改过
  *
  * Indicates whether the form or the form item has been modified.
@@ -21,6 +8,14 @@ export type DFieldType = string | number
  * false - modified
  * */
 export type Pristine = boolean
+/**
+ * 是否应该在表单项的值发生变化时调用校验函数
+ *
+ * Whether validator should be called at the time the value of form item changed
+ *
+ * Default: false
+ * */
+export type ValidateOnChange = boolean
 
 /**
  * 表示当前表单/表单项是否合法
@@ -30,8 +25,9 @@ export type Pristine = boolean
 export type Valid = boolean
 
 export interface FormItem<
-  ValueType extends DValueType,
-  FieldType extends DFieldType
+  ValueType extends string | number | boolean,
+  FieldType extends string | number,
+  IdType extends string | number
 > {
   field: FieldType
   value: ValueType
@@ -40,9 +36,9 @@ export interface FormItem<
    *
    * If !!id === false, the value of id will be reset to the value of field
    * */
-  id?: string | number
+  id?: IdType | FieldType
   /**
-   * Default: ''
+   * Default: true
    * */
   required?: boolean
   /**
@@ -57,10 +53,8 @@ export interface FormItem<
    * Default: ''
    * */
   errorText?: string
-  /**
-   * Default: ValidateTiming.OnChange
-   * */
-  validateTiming?: ValidateTiming
+
+  validateOnChange?: ValidateOnChange
 
   /**
    * 这个表单项的校验函数
@@ -92,19 +86,27 @@ export interface FormOptions<DT extends {}, ST extends any> {
    *
    * The default value of param validateAll of method formValidate
    *
-   * Default: true
+   * Default: false
    * */
   validateAll?: boolean
+
+  validateOnChange?: ValidateOnChange
 }
 
 export type TupleToUnion<T, K extends string> = T extends Array<
   { [k in K]: infer E }
 >
-  ? E
+  ? E extends unknown
+    ? never
+    : E
   : never
 
 export type FormItemsData<
-  FormItems extends FormItem<DValueType, DFieldType>[]
+  FormItems extends FormItem<
+    string | number | boolean,
+    string | number,
+    string | number
+  >[]
 > = {
   [k in TupleToUnion<FormItems, 'field'>]: TupleToUnion<FormItems, 'value'>
 }

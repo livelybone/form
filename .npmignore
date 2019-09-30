@@ -30,3 +30,5 @@ yarn.lock
 /webpack.*.js
 /rollup.*.js
 /watch.js
+
+/README-CN.md

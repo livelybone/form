@@ -1,17 +1,4 @@
 declare type ErrorText = string
-
-/**
- * 校验函数触发的时机
- *
- * Timing of calling validator
- * */
-declare enum ValidateTiming {
-  OnChange = 0,
-  OnBlur = 1,
-}
-
-declare type DValueType = string | number | boolean
-declare type DFieldType = string | number
 /**
  * 表示表单/表单项是否被修改，true - 未被修改过，false - 已被修改过
  *
@@ -21,13 +8,25 @@ declare type DFieldType = string | number
  * */
 declare type Pristine = boolean
 /**
+ * 是否应该在表单项的值发生变化时调用校验函数
+ *
+ * Whether validator should be called at the time the value of form item changed
+ *
+ * Default: false
+ * */
+declare type ValidateOnChange = boolean
+/**
  * 表示当前表单/表单项是否合法
  *
  * Indicates whether the form or the form item is valid.
  * */
 declare type Valid = boolean
 
-interface FormItem<ValueType extends DValueType, FieldType extends DFieldType> {
+interface FormItem<
+  ValueType extends string | number | boolean,
+  FieldType extends string | number,
+  IdType extends string | number
+> {
   field: FieldType
   value: ValueType
   /**
@@ -35,9 +34,9 @@ interface FormItem<ValueType extends DValueType, FieldType extends DFieldType> {
    *
    * If !!id === false, the value of id will be reset to the value of field
    * */
-  id?: string | number
+  id?: IdType | FieldType
   /**
-   * Default: ''
+   * Default: true
    * */
   required?: boolean
   /**
@@ -52,10 +51,7 @@ interface FormItem<ValueType extends DValueType, FieldType extends DFieldType> {
    * Default: ''
    * */
   errorText?: string
-  /**
-   * Default: ValidateTiming.OnChange
-   * */
-  validateTiming?: ValidateTiming
+  validateOnChange?: ValidateOnChange
 
   /**
    * 这个表单项的校验函数
@@ -86,9 +82,10 @@ interface FormOptions<DT extends {}, ST extends any> {
    *
    * The default value of param validateAll of method formValidate
    *
-   * Default: true
+   * Default: false
    * */
   validateAll?: boolean
+  validateOnChange?: ValidateOnChange
 }
 
 declare type TupleToUnion<T, K extends string> = T extends Array<
@@ -96,16 +93,22 @@ declare type TupleToUnion<T, K extends string> = T extends Array<
     [k in K]: infer E
   }
 >
-  ? E
+  ? E extends unknown
+    ? never
+    : E
   : never
 declare type FormItemsData<
-  FormItems extends FormItem<DValueType, DFieldType>[]
+  FormItems extends FormItem<
+    string | number | boolean,
+    string | number,
+    string | number
+  >[]
 > = {
   [k in TupleToUnion<FormItems, 'field'>]: TupleToUnion<FormItems, 'value'>
 }
 
 declare class Form<
-  FormItems extends FormItem<any, any>[],
+  FormItems extends FormItem<any, any, any>[],
   FormDataType extends FormItemsData<FormItems>,
   ReturnTypeOfSubmit extends any
 > {
@@ -116,13 +119,18 @@ declare class Form<
    *
    * @desc Array of form items
    * */
-  readonly items: Array<
+  items: Array<
     FormItem<
       TupleToUnion<FormItems, 'value'>,
-      TupleToUnion<FormItems, 'field'> & {
-        id: string | number
-      }
-    >
+      TupleToUnion<FormItems, 'field'>,
+      TupleToUnion<FormItems, 'id'> | TupleToUnion<FormItems, 'field'>
+    > & {
+      id: TupleToUnion<FormItems, 'id'> | TupleToUnion<FormItems, 'field'>
+      required: boolean
+      pristine: Pristine
+      valid: Valid
+      errorText: string
+    }
   >
 
   /**
@@ -132,31 +140,52 @@ declare class Form<
    * */
   readonly data: FormDataType
 
-  pristine: Pristine
+  readonly pristine: Pristine
 
-  valid: Valid
+  readonly valid: Valid
 
   /**
    * @desc 当前表单应该显示的错误信息
    *
    * @desc The current errorText of the form
    * */
-  errorText: string
+  readonly errorText: ErrorText
 
   constructor(
     formItems: FormItems,
     options?: FormOptions<FormDataType, ReturnTypeOfSubmit | FormDataType>,
   )
 
-  getItem: (
+  getItemByField(
     field: TupleToUnion<FormItems, 'field'>,
-  ) =>
-    | FormItem<
+  ):
+    | (FormItem<
         TupleToUnion<FormItems, 'value'>,
-        TupleToUnion<FormItems, 'field'> & {
-          id: DFieldType
-        }
-      >
+        TupleToUnion<FormItems, 'field'>,
+        TupleToUnion<FormItems, 'field'> | TupleToUnion<FormItems, 'id'>
+      > & {
+        id: TupleToUnion<FormItems, 'field'> | TupleToUnion<FormItems, 'id'>
+        required: boolean
+        pristine: boolean
+        valid: boolean
+        errorText: string
+      })
+    | undefined
+
+  getItemById(
+    id: TupleToUnion<FormItems, 'id'> | TupleToUnion<FormItems, 'field'>,
+  ):
+    | (FormItem<
+        TupleToUnion<FormItems, 'value'>,
+        TupleToUnion<FormItems, 'field'>,
+        TupleToUnion<FormItems, 'field'> | TupleToUnion<FormItems, 'id'>
+      > & {
+        id: TupleToUnion<FormItems, 'field'> | TupleToUnion<FormItems, 'id'>
+        required: boolean
+        pristine: boolean
+        valid: boolean
+        errorText: string
+      })
     | undefined
 
   /**
@@ -164,17 +193,17 @@ declare class Form<
    *
    * @desc Update the value of the form item that matched the param `field`
    * */
-  itemChange: (
+  itemChange(
     field: TupleToUnion<FormItems, 'field'>,
     value: TupleToUnion<FormItems, 'value'>,
-  ) => void
+  ): void
 
   /**
    * @desc 校验与参数 field 对应的表单项
    *
    * @desc Validate the value of the form item that matched the param `field`
    * */
-  itemValidate: (field: TupleToUnion<FormItems, 'field'>) => string
+  itemValidate(field: TupleToUnion<FormItems, 'field'>): ErrorText
 
   /**
    * @desc 校验整个表单，更新表单实例属性：valid, pristine, errorText, data, items
@@ -193,14 +222,14 @@ declare class Form<
    *
    * @return ErrorText
    * */
-  formValidate: (validateAll?: boolean) => string
+  formValidate(validateAll?: boolean): ErrorText
 
   /**
    * @desc 在提交之前会先做一次表单校验（运行 formValidate）
    *
    * @desc Method formValidate will be called before run the onSubmit function in this method
    * */
-  submit: () => Promise<FormDataType | ReturnTypeOfSubmit>
+  submit(): Promise<ReturnTypeOfSubmit | FormDataType>
 
   /**
    * @desc 重置表单
@@ -209,7 +238,7 @@ declare class Form<
    *
    * @param values             Default: this.options.initialValues
    * */
-  reset: (values?: FormDataType) => void
+  reset(values?: FormDataType): void
 
   /**
    * @desc 用参数 value 的值重置与参数 field 对应的表单项
@@ -219,10 +248,10 @@ declare class Form<
    * @param field
    * @param value              Default: this.options.initialValues[field]
    * */
-  resetItem: (
+  resetItem(
     field: TupleToUnion<FormItems, 'field'>,
     value?: TupleToUnion<FormItems, 'value'>,
-  ) => void
+  ): void
 
   /**
    * @desc 清除表单/表单项的校验结果
@@ -232,31 +261,29 @@ declare class Form<
    * @param [field]            If `!!field === true`, it will clear the validate result of the form item that matched the param field
    *                           else, if will clear the validate result of the form
    * */
-  clearValidateResult: (
-    field?: TupleToUnion<FormItems, 'field'> | undefined,
-  ) => void
+  clearValidateResult(field?: TupleToUnion<FormItems, 'field'>): void
 }
 
 declare class FormItemsManager<
   FormItems extends {
-    [id: string]: FormItem<any, any>
+    [id: string]: FormItem<any, any, any>
   }
 > {
   private readonly allItems
 
   constructor(formItems: FormItems)
 
-  getItem: <Id extends keyof FormItems>(
+  getItem<Id extends keyof FormItems>(
     id: Id,
-  ) =>
+  ):
     | (FormItems[Id] & {
         id: Id
       })
     | undefined
 
-  getItems: <Ids extends (keyof FormItems)[]>(
+  getItems<Ids extends (keyof FormItems)[]>(
     ids: Ids,
-  ) => (
+  ): (
     | (FormItems[keyof FormItems] & {
         id: keyof FormItems
       })
@@ -264,8 +291,6 @@ declare class FormItemsManager<
 }
 
 export {
-  DFieldType,
-  DValueType,
   ErrorText,
   Form,
   FormItem,
@@ -275,5 +300,5 @@ export {
   Pristine,
   TupleToUnion,
   Valid,
-  ValidateTiming,
+  ValidateOnChange,
 }

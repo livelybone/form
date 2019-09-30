@@ -5,13 +5,11 @@
 ![typescript](https://img.shields.io/badge/typescript-supported-blue.svg "typescript")
 ![pkg.module](https://img.shields.io/badge/pkg.module-supported-blue.svg "pkg.module")
 
-> `pkg.module supported`, which means that you can apply tree-shaking in you project
+> `pkg.module supported`, 天然支持 tree-shaking, 使用 es module 引用即可
 
-[中文文档](./README-CN.md)
+[En Doc](./README.md)
 
-A cross-framework form management library, realized validate, format, reset, submit
-
-Can be used in React, Vue, Angular, React Native...
+一个跨平台的表单管理工具，可以应用于 React, Vue, React Native, Angular... 实现表单验证, 值的格式化, 表单重置, 表单提交
 
 ## repository
 https://github.com/livelybone/form.git
@@ -20,13 +18,13 @@ https://github.com/livelybone/form.git
 https://github.com/livelybone/form#readme
 
 ## Run Example
-Your can see the usage by run the example of the module, here is the step:
+你可以通过运行项目的 example 来了解这个组件的使用，以下是启动步骤：
 
-1. Clone the library `git clone https://github.com/livelybone/form.git`
-2. Go to the directory `cd your-module-directory`
-3. Install npm dependencies `npm i`(use taobao registry: `npm i --registry=http://registry.npm.taobao.org`)
-4. Open service `npm run dev`
-5. See the example(usually is `http://127.0.0.1:3000/examples/test.html`) in your browser
+1. 克隆项目到本地 `git clone https://github.com/livelybone/form.git`
+2. 进入本地克隆目录 `cd your-module-directory`
+3. 安装项目依赖 `npm i`(使用 taobao 源: `npm i --registry=http://registry.npm.taobao.org`)
+4. 启动服务 `npm run dev`
+5. 在你的浏览器看 example (地址通常是 `http://127.0.0.1:3000/examples/test.html`)
 
 ## Installation
 ```bash
@@ -37,7 +35,7 @@ npm i -S @livelybone/form
 `Form`
 
 ## Interface
-See in [index.d.ts](./index.d.ts)
+去 [index.d.ts](./index.d.ts) 查看配置项
 
 ## Usage
 
@@ -45,13 +43,13 @@ See in [index.d.ts](./index.d.ts)
 ```js
 import { Form, FormItemsManager } from '@livelybone/form'
 
-/** Manage all the form items in your project or page */
+/** 管理你项目中的所有表单项 */
 const formItems = new FormItemsManager({
   name: { field: 'name', value: '' },
   phone: {
     field: 'phone',
     value: '',
-    validator: (val) => {
+    validator: val => {
       return /^1\d{10}$/.test(val) ? '' : 'Chinese phone number was wrong'
     },
   },
@@ -65,7 +63,7 @@ const formItems = new FormItemsManager({
   address: { field: 'address', value: '' },
 })
 
-/** Choose the items you need to generate a form */
+/** 选择你当前要用到的表单项生成表单 */
 const form = new Form(
   formItems.getItems(['name', 'phone', 'amount']),
   {
@@ -79,12 +77,12 @@ const form = new Form(
   },
 )
 
-/** Change the value of form item */
+/** 更新表单的值 */
 form.itemChange('name', 'livelybone')
 form.itemChange('phone', '120')
 form.itemChange('amount', 'a-b/1')
 
-/** Get the validate result */
+/** 你可以看到表单的校验情况 */
 console.log('Is name valid: ', form.getItemByField('name').valid)
 // -> Is name valid: true
 console.log('Is phone valid: ', form.getItemByField('phone').valid) 
@@ -96,26 +94,26 @@ console.log('Is form valid: ', form.valid)
 console.log('The form error text is: ', form.errorText) 
 // -> The form error text is: Chinese phone number was wrong
 
-/** The value of amount has been formatted */
+/** 你可以看到 amount 的值被格式化了 */
 console.log('The value of amount is: ', form.getItemByField('amount').value)
 // -> The value of amount is: '1'
 
-/** Get the form data */
+/** 你可以获取表单的数据 */
 console.log('The data of the form is: ', form.data)
 // -> The data of the form is: { name: 'livelybone', phone: '120', amount: '1' }
 
-/** Submit the form */
+/** 提交表单 */
 form.submit()
 
-/** Reset the form */
+/** 重置表单 */
 form.reset()
 
-/** Reset one form item */
+/** 重置单个表单项 */
 form.resetItem('amount')
 ```
 
-Use in html, see what your can use in [CDN: unpkg](https://unpkg.com/@livelybone/form/lib/umd/)
+在 HTML 文件中直接饮用，你可以在 [CDN: unpkg](https://unpkg.com/@livelybone/form/lib/umd/) 看到你能用到的所有 js 脚本
 ```html
-<-- use what you want -->
+<-- 然后使用你需要的 -->
 <script src="https://unpkg.com/@livelybone/form/lib/umd/<--module-->.js"></script>
 ```

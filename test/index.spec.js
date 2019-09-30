@@ -39,6 +39,8 @@ describe('Form', () => {
   }
   const manager = new Form.FormItemsManager(items)
 
+  console.log(manager)
+
   const formItems = manager.getItems(['name', 'phone'])
 
   const form = new Form.Form(formItems)
@@ -61,8 +63,8 @@ describe('Form', () => {
 
   it('Item validate', () => {
     console.log('phone field validate', form.itemValidate('phoneField'))
-    expect(form.getItem('phoneField').valid).to.equal(false)
-    expect(form.getItem('phoneField').errorText).to.equal('格式错误')
+    expect(form.getItemByField('phoneField').valid).to.equal(false)
+    expect(form.getItemByField('phoneField').errorText).to.equal('格式错误')
     expect(form.valid).to.equal(false)
     expect(form.errorText).to.equal('')
   })
@@ -79,24 +81,24 @@ describe('Form', () => {
     expect(form.pristine).to.equal(true)
     expect(form.errorText).to.equal('')
     expect(form.data.phoneField).to.equal('')
-    expect(form.getItem('phoneField').valid).to.equal(true)
-    expect(form.getItem('phoneField').pristine).to.equal(true)
-    expect(form.getItem('phoneField').errorText).to.equal('')
+    expect(form.getItemByField('phoneField').valid).to.equal(true)
+    expect(form.getItemByField('phoneField').pristine).to.equal(true)
+    expect(form.getItemByField('phoneField').errorText).to.equal('')
   })
 
   it('Item reset', () => {
     form.itemChange('phoneField', '180')
     form.resetItem('phoneField')
     expect(form.data.phoneField).to.equal('')
-    expect(form.getItem('phoneField').valid).to.equal(true)
-    expect(form.getItem('phoneField').pristine).to.equal(true)
-    expect(form.getItem('phoneField').errorText).to.equal('')
+    expect(form.getItemByField('phoneField').valid).to.equal(true)
+    expect(form.getItemByField('phoneField').pristine).to.equal(true)
+    expect(form.getItemByField('phoneField').errorText).to.equal('')
   })
 
   it('Item clear validate result', () => {
     form.itemChange('phoneField', '180')
     form.clearValidateResult('phoneField')
-    expect(form.getItem('phoneField').errorText).to.equal('')
-    expect(form.getItem('phoneField').valid).to.equal(true)
+    expect(form.getItemByField('phoneField').errorText).to.equal('')
+    expect(form.getItemByField('phoneField').valid).to.equal(true)
   })
 })
