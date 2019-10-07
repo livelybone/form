@@ -36,6 +36,14 @@ interface FormItem<
    * */
   id?: IdType | FieldType
   /**
+   * 当检验值为空的表单项时，errorText 需根据 label 生成
+   * 比如：`姓名不能为空`，`密码不能为空`
+   *
+   * When verifying a form item with an empty value, the errorText is generated based on the label
+   * e.g. `姓名不能为空`，`密码不能为空`
+   * */
+  label?: string
+  /**
    * Default: true
    * */
   required?: boolean
@@ -86,6 +94,14 @@ interface FormOptions<DT extends {}, ST extends any> {
    * */
   validateAll?: boolean
   validateOnChange?: ValidateOnChange
+  /**
+   * 当检验值为空的表单项时，errorText 的生成模板。`{label}` 为表单项 label 属性的占位符
+   *
+   * ErrorText's generated template when verifying a form item with an empty value. `{label}` is a placeholder of the label prop of the form item
+   *
+   * Default: `{label}不能为空`
+   * */
+  emptyErrorTemplate?: string
 }
 
 declare type TupleToUnion<T, K extends string> = T extends Array<
