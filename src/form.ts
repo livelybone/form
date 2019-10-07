@@ -78,6 +78,7 @@ export class Form<
       validateAll: options.validateAll || false,
       initialValues: { ...this.data },
       validateOnChange: options.validateOnChange || false,
+      emptyErrorTemplate: options.emptyErrorTemplate || '{label}不能为空',
     }
   }
 
@@ -105,7 +106,7 @@ export class Form<
       item.value = item.formatter ? item.formatter(value) : value
 
       const { validateOnChange = this.options.validateOnChange } = item
-      if (validateOnChange) itemValidate(item)
+      if (validateOnChange) itemValidate(item, this.options.emptyErrorTemplate)
       else item.pristine = false
     } else console.error("Form: The field isn't exist in this form")
   }
@@ -117,7 +118,7 @@ export class Form<
    * */
   itemValidate(field: TupleToUnion<FormItems, 'field'>): ErrorText {
     const item = this.getItemByField(field)
-    if (item) return itemValidate(item)
+    if (item) return itemValidate(item, this.options.emptyErrorTemplate)
     return 'The field isn\'t exist in this form'
   }
 
@@ -143,7 +144,7 @@ export class Form<
 
     for (let i = 0; i < this.items.length; i += 1) {
       if (!validateAll && errorTxt) break
-      const err = itemValidate(this.items[i])
+      const err = itemValidate(this.items[i], this.options.emptyErrorTemplate)
       if (!errorTxt) errorTxt = err
     }
 

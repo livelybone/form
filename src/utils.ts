@@ -1,10 +1,15 @@
 /* eslint-disable no-param-reassign */
 import { FormItem } from './type'
 
-export function itemValidate<Item extends FormItem<any, any, any>>(item: Item) {
+export function itemValidate<Item extends FormItem<any, any, any>>(
+  item: Item,
+  emptyErrorTemplate: string,
+) {
   item.pristine = false
   item.errorText =
-    (item.required !== false || item.value) && item.validator
+    item.required !== false && !item.value
+      ? emptyErrorTemplate.replace('{label}', item.label || '')
+      : item.validator
       ? item.validator(item.value)
       : ''
   item.valid = !item.errorText
