@@ -17,17 +17,20 @@ export function itemValidate<
   return item.errorText
 }
 
-export function init<Items extends FormItem<any, any, any>[]>(
-  items: Items,
-  initialValues: any,
-) {
-  const values = initialValues || {}
+export function init<
+  Items extends FormItem<any, any, any>[],
+  Options extends Required<FormOptions<any, any>>
+>(items: Items, options: Options) {
+  const values = options.initialValues || {}
   return items.map(item => {
     const value =
       values[item.field] !== undefined
         ? item.formatter
-          ? item.formatter(initialValues[item.field])
-          : initialValues[item.field]
+          ? item.formatter(
+              options.initialValues[item.field],
+              options.optionsForValidatorAndFormatter,
+            )
+          : options.initialValues[item.field]
         : item.value
     return {
       ...item,

@@ -71,8 +71,8 @@ export class Form<
     formItems: FormItems,
     options: FormOptions<FormDataType, ReturnTypeOfSubmit | FormDataType> = {},
   ) {
-    this.items = init(formItems, options.initialValues)
-    this.updateOptions({ ...options, initialValues: { ...this.data } })
+    this.updateOptions(options)
+    this.items = init(formItems, this.options)
   }
 
   getItemByField(field: TupleToUnion<FormItems, 'field'>) {
@@ -96,7 +96,9 @@ export class Form<
   ): void {
     const item = this.getItemByField(field)
     if (item) {
-      item.value = item.formatter ? item.formatter(value) : value
+      item.value = item.formatter
+        ? item.formatter(value, this.options.optionsForValidatorAndFormatter)
+        : value
 
       const { validateOnChange = this.options.validateOnChange } = item
       if (validateOnChange) itemValidate(item, this.options)
@@ -165,7 +167,8 @@ export class Form<
    * @param values             Default: this.options.initialValues
    * */
   reset(values: FormDataType = this.options.initialValues): void {
-    this.items = init(this.items, values)
+    this.updateOptions({ initialValues: values })
+    this.items = init(this.items, this.options)
   }
 
   /**
@@ -183,7 +186,9 @@ export class Form<
     const item = this.getItemByField(field)
     if (item) {
       item.pristine = true
-      item.value = item.formatter ? item.formatter(value) : value
+      item.value = item.formatter
+        ? item.formatter(value, this.options.optionsForValidatorAndFormatter)
+        : value
       clearValidateRes(item)
     } else console.error("Form: The field isn't exist in this form")
   }
