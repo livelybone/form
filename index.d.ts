@@ -68,14 +68,14 @@ interface FormItem<
    *
    * Default: (val) => ''
    * */
-  validator?(value: ValueType): ErrorText
+  validator?(value: ValueType, options?: any): ErrorText
 
   /**
    * 格式化函数，每当值发生变化时触发
    *
    * Format the value when the value changes
    * */
-  formatter?(value: ValueType): ValueType
+  formatter?(value: ValueType, options?: any): ValueType
 }
 
 interface FormOptions<DT extends {}, ST extends any> {
@@ -102,6 +102,62 @@ interface FormOptions<DT extends {}, ST extends any> {
    * Default: `{label}不能为空`
    * */
   emptyErrorTemplate?: string
+  /**
+   * 提供一些参数，用于实现表单项的动态校验或者动态格式化
+   * 比如：不同币种金额的校验，币种的小数位可能会不一样，这时候我们可以提供一个 precision 参数，validator 函数可以从 options 拿到这个参数，从而做对应校验
+   *
+   * Provides parameters for dynamic validation of form items
+   * This is an application scenario:
+   *  Where the number of decimal places in different currencies may be different with each other.
+   *  In this case, we can provide a precision parameter, which the validator function can take from the options to do the validating
+   *
+   * Code Example:
+   *
+   * const formItems = {
+   *   asset: {
+   *     label: 'asset',
+   *     field: 'asset',
+   *     value: 'CNY',
+   *     type: 'select',
+   *     options: [
+   *       { name: 'CNY', value: 'CNY', precision: '2' },
+   *       { name: 'USD', value: 'USD', precision: '4' },
+   *     ]
+   *   },
+   *   amount: {
+   *     label: 'amount',
+   *     field: 'amount',
+   *     value: '',
+   *     validator: (val, { precision }) => {
+   *      if (precision <= 0) {
+   *      return /^\d+$/.test(val) && +val % 10 ** -precision === 0
+   *        ? ''
+   *        : 'Please input the correct amount'
+   *      }
+   *      const reg = new RegExp(`^(0|[1-9]\\d*)(\\.\\d{1,${precision}})?$`)
+   *      return reg.test(val) ? '' : 'Please input the correct amount'
+   *     }
+   *   }
+   * }
+   *
+   * const form = new Form(
+   *   [
+   *    formItems.asset,
+   *    formItems.amount,
+   *   ],
+   *   {
+   *    optionsForValidatorAndFormatter: { precision: 2 }
+   *   },
+   * )
+   *
+   * // When the asset change to USD, you can update the options
+   * form.itemChange('asset', 'USD')
+   * form.updateOptions({ optionsForValidatorAndFormatter: { precision: 4 } })
+   * */
+  optionsForValidatorAndFormatter?: {
+    [key: string]: any
+    [key: number]: any
+  }
 }
 
 declare type TupleToUnion<T, K extends string> = T extends Array<
@@ -278,6 +334,10 @@ declare class Form<
    *                           else, if will clear the validate result of the form
    * */
   clearValidateResult(field?: TupleToUnion<FormItems, 'field'>): void
+
+  updateOptions(
+    options: FormOptions<FormDataType, ReturnTypeOfSubmit | FormDataType>,
+  ): void
 }
 
 declare class FormItemsManager<

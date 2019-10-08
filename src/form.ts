@@ -14,9 +14,9 @@ export class Form<
   FormDataType extends FormItemsData<FormItems>,
   ReturnTypeOfSubmit extends any
 > {
-  private readonly options!: Required<
+  private readonly options: Required<
     FormOptions<FormDataType, ReturnTypeOfSubmit | FormDataType>
-  >
+  > = {} as any
 
   /**
    * @desc 表单项数组
@@ -72,14 +72,7 @@ export class Form<
     options: FormOptions<FormDataType, ReturnTypeOfSubmit | FormDataType> = {},
   ) {
     this.items = init(formItems, options.initialValues)
-    this.options = {
-      onSubmit:
-        options.onSubmit || ((data: FormDataType) => Promise.resolve(data)),
-      validateAll: options.validateAll || false,
-      initialValues: { ...this.data },
-      validateOnChange: options.validateOnChange || false,
-      emptyErrorTemplate: options.emptyErrorTemplate || '{label}不能为空',
-    }
+    this.updateOptions({ ...options, initialValues: { ...this.data } })
   }
 
   getItemByField(field: TupleToUnion<FormItems, 'field'>) {
@@ -106,7 +99,7 @@ export class Form<
       item.value = item.formatter ? item.formatter(value) : value
 
       const { validateOnChange = this.options.validateOnChange } = item
-      if (validateOnChange) itemValidate(item, this.options.emptyErrorTemplate)
+      if (validateOnChange) itemValidate(item, this.options)
       else item.pristine = false
     } else console.error("Form: The field isn't exist in this form")
   }
@@ -118,7 +111,7 @@ export class Form<
    * */
   itemValidate(field: TupleToUnion<FormItems, 'field'>): ErrorText {
     const item = this.getItemByField(field)
-    if (item) return itemValidate(item, this.options.emptyErrorTemplate)
+    if (item) return itemValidate(item, this.options)
     return 'The field isn\'t exist in this form'
   }
 
@@ -144,7 +137,7 @@ export class Form<
 
     for (let i = 0; i < this.items.length; i += 1) {
       if (!validateAll && errorTxt) break
-      const err = itemValidate(this.items[i], this.options.emptyErrorTemplate)
+      const err = itemValidate(this.items[i], this.options)
       if (!errorTxt) errorTxt = err
     }
 
@@ -211,6 +204,29 @@ export class Form<
       } else console.error("Form: The field isn't exist in this form")
     } else {
       this.items.forEach(clearValidateRes)
+    }
+  }
+
+  updateOptions(
+    options: FormOptions<FormDataType, ReturnTypeOfSubmit | FormDataType>,
+  ) {
+    this.options.onSubmit =
+      options.onSubmit ||
+      this.options.onSubmit ||
+      ((data: FormDataType) => Promise.resolve(data))
+    this.options.validateAll =
+      options.validateAll || this.options.validateAll || false
+    this.options.initialValues =
+      options.initialValues || this.options.initialValues
+    this.options.validateOnChange =
+      options.validateOnChange || this.options.validateOnChange || false
+    this.options.emptyErrorTemplate =
+      options.emptyErrorTemplate ||
+      this.options.emptyErrorTemplate ||
+      '{label}不能为空'
+    this.options.optionsForValidatorAndFormatter = {
+      ...this.options.optionsForValidatorAndFormatter,
+      ...options.optionsForValidatorAndFormatter,
     }
   }
 }

@@ -1,16 +1,16 @@
 /* eslint-disable no-param-reassign */
-import { FormItem } from './type'
+import { FormItem, FormOptions } from './type'
 
-export function itemValidate<Item extends FormItem<any, any, any>>(
-  item: Item,
-  emptyErrorTemplate: string,
-) {
+export function itemValidate<
+  Item extends FormItem<any, any, any>,
+  Options extends Required<FormOptions<any, any>>
+>(item: Item, options: Options) {
   item.pristine = false
   item.errorText =
     item.required !== false && !item.value
-      ? emptyErrorTemplate.replace('{label}', item.label || '')
+      ? options.emptyErrorTemplate.replace('{label}', item.label || '')
       : item.validator
-      ? item.validator(item.value)
+      ? item.validator(item.value, options.optionsForValidatorAndFormatter)
       : ''
   item.valid = !item.errorText
 
