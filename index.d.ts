@@ -351,19 +351,15 @@ declare class FormItemsManager<
 
   getItem<Id extends keyof FormItems>(
     id: Id,
-  ):
-    | (FormItems[Id] & {
-        id: Id
-      })
-    | undefined
+  ): FormItems[Id] & {
+    id: Id
+  }
 
   getItems<Ids extends (keyof FormItems)[]>(
     ids: Ids,
-  ): (
-    | (FormItems[keyof FormItems] & {
-        id: keyof FormItems
-      })
-    | undefined)[]
+  ): (FormItems[keyof FormItems] & {
+    id: keyof FormItems
+  })[]
 }
 
 export {
