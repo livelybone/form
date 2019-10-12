@@ -5,15 +5,15 @@ export class FormItemsManager<
   FormItems extends { [id: string]: FormItem<any, any, any> }
 > {
   private readonly allItems: {
-    [id in keyof FormItems]: FormItems[id] & { id: keyof FormItems }
+    [id in keyof FormItems]: FormItems[id] & { id: id }
   }
 
   constructor(formItems: FormItems) {
     this.allItems = formItemsDictionary(formItems)
   }
 
-  getItem<Id extends keyof FormItems>(id: Id): FormItems[Id] & { id: Id } {
-    const item = this.allItems[id] as FormItems[Id] & { id: Id }
+  getItem<Id extends keyof FormItems>(id: Id) {
+    const item = this.allItems[id]
     if (!item) {
       throw new Error(
         `FormItemsManagement: The form item you search for by id \`${id}\` is not exist, please make sure param id correct`,
