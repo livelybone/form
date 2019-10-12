@@ -167,7 +167,7 @@ export interface FormOptions<DT extends {}, ST extends any> {
 export type TupleToUnion<T, K extends string> = T extends Array<
   { [k in K]: infer E }
 >
-  ? E extends unknown
+  ? unknown extends E
     ? never
     : E
   : never

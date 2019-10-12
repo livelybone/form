@@ -22,16 +22,14 @@ export function init<
   Options extends Required<FormOptions<any, any>>
 >(items: Items, options: Options) {
   const values = options.initialValues || {}
+
   return items.map(item => {
-    const value =
-      values[item.field] !== undefined
-        ? item.formatter
-          ? item.formatter(
-              options.initialValues[item.field],
-              options.optionsForValidatorAndFormatter,
-            )
-          : options.initialValues[item.field]
-        : item.value
+    const $value =
+      values[item.field] !== undefined ? values[item.field] : item.value
+    const value = item.formatter
+      ? item.formatter($value, options.optionsForValidatorAndFormatter)
+      : $value
+
     return {
       ...item,
       id: item.id || item.field,

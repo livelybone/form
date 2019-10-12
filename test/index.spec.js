@@ -65,11 +65,10 @@ describe('Form', () => {
     console.log('phone field validate', form.itemValidate('phoneField'))
     expect(form.getItemByField('phoneField').valid).to.equal(false)
     expect(form.getItemByField('phoneField').errorText).to.equal('格式错误')
-    expect(form.valid).to.equal(false)
-    expect(form.errorText).to.equal('')
   })
 
   it('Form validate', () => {
+    form.itemChange('nameField', 'sdf')
     expect(form.formValidate()).to.equal('格式错误')
     expect(form.valid).to.equal(false)
     expect(form.errorText).to.equal('格式错误')
