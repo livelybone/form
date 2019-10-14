@@ -25,14 +25,14 @@ export function init<
 
   return items.map(item => {
     const $value =
-      values[item.field] !== undefined ? values[item.field] : item.value
+      values[item.name] !== undefined ? values[item.name] : item.value
     const value = item.formatter
       ? item.formatter($value, options.optionsForValidatorAndFormatter)
       : $value
 
     return {
       ...item,
-      id: item.id || item.field,
+      id: item.id || item.name,
       value,
       required: item.required !== undefined ? item.required : true,
       pristine: true,

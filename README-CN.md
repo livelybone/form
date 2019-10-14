@@ -45,22 +45,22 @@ import { Form, FormItemsManager } from '@livelybone/form'
 
 /** 管理你项目中的所有表单项 */
 const formItems = new FormItemsManager({
-  name: { field: 'name', value: '' },
+  name: { name: 'name', value: '' },
   phone: {
-    field: 'phone',
+    name: 'phone',
     value: '',
     validator: val => {
       return /^1\d{10}$/.test(val) ? '' : 'Chinese phone number was wrong'
     },
   },
   amount: {
-    field: 'amount', 
+    name: 'amount', 
     value: '', 
     formatter: val => {
       return val.replace(/[^\d]+/g, '')
     }
   },
-  address: { field: 'address', value: '' },
+  address: { name: 'address', value: '' },
 })
 
 /** 选择你当前要用到的表单项生成表单 */
@@ -83,11 +83,11 @@ form.itemChange('phone', '120')
 form.itemChange('amount', 'a-b/1')
 
 /** 你可以看到表单的校验情况 */
-console.log('Is name valid: ', form.getItemByField('name').valid)
+console.log('Is name valid: ', form.getItemByName('name').valid)
 // -> Is name valid: true
-console.log('Is phone valid: ', form.getItemByField('phone').valid) 
+console.log('Is phone valid: ', form.getItemByName('phone').valid) 
 // -> Is phone valid: false
-console.log('The phone error text is: ', form.getItemByField('phone').errorText) 
+console.log('The phone error text is: ', form.getItemByName('phone').errorText) 
 // -> The form error text is: Chinese phone number was wrong
 console.log('Is form valid: ', form.valid) 
 // -> Is form valid: false
@@ -95,7 +95,7 @@ console.log('The form error text is: ', form.errorText)
 // -> The form error text is: Chinese phone number was wrong
 
 /** 你可以看到 amount 的值被格式化了 */
-console.log('The value of amount is: ', form.getItemByField('amount').value)
+console.log('The value of amount is: ', form.getItemByName('amount').value)
 // -> The value of amount is: '1'
 
 /** 你可以获取表单的数据 */

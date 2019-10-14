@@ -24,17 +24,17 @@ declare type Valid = boolean
 
 interface FormItem<
   ValueType extends string | number | boolean,
-  FieldType extends string | number,
+  NameType extends string | number,
   IdType extends string | number
 > {
-  field: FieldType
+  name: NameType
   value: ValueType
   /**
-   * 如果 id 没有定义，它的值将会被置为 field 的值
+   * 如果 id 没有定义，它的值将会被置为 name 的值
    *
-   * If !!id === false, the value of id will be reset to the value of field
+   * If !!id === false, the value of id will be reset to the value of name
    * */
-  id?: IdType | FieldType
+  id?: IdType | NameType
   /**
    * 当检验值为空的表单项时，errorText 需根据 label 生成
    * 比如：`姓名不能为空`，`密码不能为空`
@@ -79,12 +79,7 @@ interface FormItem<
 }
 
 interface FormOptions<DT extends {}, ST extends any> {
-  /**
-   * Called in Form.prototype.submit
-   * */
-  onSubmit?(data: DT): Promise<ST>
-
-  initialValues?: DT
+  initialValues?: Partial<DT>
   /**
    * formValidate 方法的 validateAll 参数的默认值
    *
@@ -116,7 +111,7 @@ interface FormOptions<DT extends {}, ST extends any> {
    * const formItems = {
    *   asset: {
    *     label: 'asset',
-   *     field: 'asset',
+   *     name: 'asset',
    *     value: 'CNY',
    *     type: 'select',
    *     options: [
@@ -126,7 +121,7 @@ interface FormOptions<DT extends {}, ST extends any> {
    *   },
    *   amount: {
    *     label: 'amount',
-   *     field: 'amount',
+   *     name: 'amount',
    *     value: '',
    *     validator: (val, { precision }) => {
    *      if (precision <= 0) {
@@ -158,6 +153,11 @@ interface FormOptions<DT extends {}, ST extends any> {
     [key: string]: any
     [key: number]: any
   }
+
+  /**
+   * Called in Form.prototype.submit
+   * */
+  onSubmit?(data: DT): Promise<ST>
 }
 
 declare type TupleToUnion<T, K extends string> = T extends Array<
@@ -176,33 +176,46 @@ declare type FormItemsData<
     string | number
   >[]
 > = {
-  [k in TupleToUnion<FormItems, 'field'>]: TupleToUnion<FormItems, 'value'>
+  [k in TupleToUnion<FormItems, 'name'>]: TupleToUnion<FormItems, 'value'>
 }
+declare type TupleUnion<T> = T extends (infer E)[]
+  ? unknown extends E
+    ? never
+    : E
+  : never
 
 declare class Form<
   FormItems extends FormItem<any, any, any>[],
   ReturnTypeOfSubmit extends any
 > {
-  private readonly options
-
   /**
    * @desc 表单项数组
    *
    * @desc Array of form items
    * */
   items: Array<
-    FormItem<
-      TupleToUnion<FormItems, 'value'>,
-      TupleToUnion<FormItems, 'field'>,
-      TupleToUnion<FormItems, 'id'> | TupleToUnion<FormItems, 'field'>
-    > & {
-      id: TupleToUnion<FormItems, 'id'> | TupleToUnion<FormItems, 'field'>
-      required: boolean
-      pristine: Pristine
-      valid: Valid
-      errorText: string
-    }
+    {
+      [index in Extract<keyof FormItems, number>]: FormItems[index] & {
+        id: TupleToUnion<FormItems, 'id'> | TupleToUnion<FormItems, 'name'>
+        required: boolean
+        pristine: Pristine
+        valid: Valid
+        errorText: string
+      }
+    }[Extract<keyof FormItems, number>]
   >
+
+  $errorText: ErrorText
+
+  private readonly options
+
+  constructor(
+    formItems: FormItems,
+    options?: FormOptions<
+      FormItemsData<FormItems>,
+      ReturnTypeOfSubmit | FormItemsData<FormItems>
+    >,
+  )
 
   /**
    * @desc 当前表单数据，由表单项数组生成
@@ -215,8 +228,6 @@ declare class Form<
 
   readonly valid: Valid
 
-  $errorText: ErrorText
-
   /**
    * @desc 当前表单应该显示的错误信息
    *
@@ -224,62 +235,50 @@ declare class Form<
    * */
   errorText: ErrorText
 
-  constructor(
-    formItems: FormItems,
-    options?: FormOptions<
-      FormItemsData<FormItems>,
-      ReturnTypeOfSubmit | FormItemsData<FormItems>
-    >,
-  )
-
-  getItemByField(
-    field: TupleToUnion<FormItems, 'field'>,
+  getItemByName(
+    name: TupleToUnion<FormItems, 'name'>,
   ):
-    | (FormItem<
-        TupleToUnion<FormItems, 'value'>,
-        TupleToUnion<FormItems, 'field'>,
-        TupleToUnion<FormItems, 'field'> | TupleToUnion<FormItems, 'id'>
-      > & {
-        id: TupleToUnion<FormItems, 'field'> | TupleToUnion<FormItems, 'id'>
-        required: boolean
-        pristine: boolean
-        valid: boolean
-        errorText: string
-      })
+    | {
+        [index in Extract<keyof FormItems, number>]: FormItems[index] & {
+          id: TupleToUnion<FormItems, 'id'> | TupleToUnion<FormItems, 'name'>
+          required: boolean
+          pristine: boolean
+          valid: boolean
+          errorText: string
+        }
+      }[Extract<keyof FormItems, number>]
     | undefined
 
   getItemById(
-    id: TupleToUnion<FormItems, 'id'> | TupleToUnion<FormItems, 'field'>,
+    id: TupleToUnion<FormItems, 'id'> | TupleToUnion<FormItems, 'name'>,
   ):
-    | (FormItem<
-        TupleToUnion<FormItems, 'value'>,
-        TupleToUnion<FormItems, 'field'>,
-        TupleToUnion<FormItems, 'field'> | TupleToUnion<FormItems, 'id'>
-      > & {
-        id: TupleToUnion<FormItems, 'field'> | TupleToUnion<FormItems, 'id'>
-        required: boolean
-        pristine: boolean
-        valid: boolean
-        errorText: string
-      })
+    | {
+        [index in Extract<keyof FormItems, number>]: FormItems[index] & {
+          id: TupleToUnion<FormItems, 'id'> | TupleToUnion<FormItems, 'name'>
+          required: boolean
+          pristine: boolean
+          valid: boolean
+          errorText: string
+        }
+      }[Extract<keyof FormItems, number>]
     | undefined
 
   /**
-   * @desc 更新与参数 field 对应的表单项的值
+   * @desc 更新与参数 name 对应的表单项的值
    *
-   * @desc Update the value of the form item that matched the param `field`
+   * @desc Update the value of the form item that matched the param `name`
    * */
   itemChange(
-    field: TupleToUnion<FormItems, 'field'>,
+    name: TupleToUnion<FormItems, 'name'>,
     value: TupleToUnion<FormItems, 'value'>,
   ): void
 
   /**
-   * @desc 校验与参数 field 对应的表单项
+   * @desc 校验与参数 name 对应的表单项
    *
-   * @desc Validate the value of the form item that matched the param `field`
+   * @desc Validate the value of the form item that matched the param `name`
    * */
-  itemValidate(field: TupleToUnion<FormItems, 'field'>): ErrorText
+  itemValidate(name: TupleToUnion<FormItems, 'name'>): ErrorText
 
   /**
    * @desc 校验整个表单，更新表单实例属性：valid, pristine, errorText, data, items
@@ -317,27 +316,27 @@ declare class Form<
   reset(values?: FormItemsData<FormItems>): void
 
   /**
-   * @desc 用参数 value 的值重置与参数 field 对应的表单项
+   * @desc 用参数 value 的值重置与参数 name 对应的表单项
    *
-   * @desc Reset form item that matched the param field with the param value
+   * @desc Reset form item that matched the param name with the param value
    *
-   * @param field
-   * @param value              Default: this.options.initialValues[field]
+   * @param name
+   * @param value              Default: this.options.initialValues[name]
    * */
   resetItem(
-    field: TupleToUnion<FormItems, 'field'>,
+    name: TupleToUnion<FormItems, 'name'>,
     value?: TupleToUnion<FormItems, 'value'>,
   ): void
 
   /**
    * @desc 清除表单/表单项的校验结果
    *
-   * @desc Clear the validate result of the form or the form item that matched the param field
+   * @desc Clear the validate result of the form or the form item that matched the param name
    *
-   * @param [field]            If `!!field === true`, it will clear the validate result of the form item that matched the param field
+   * @param [name]            If `!!name === true`, it will clear the validate result of the form item that matched the param name
    *                           else, if will clear the validate result of the form
    * */
-  clearValidateResult(field?: TupleToUnion<FormItems, 'field'>): void
+  clearValidateResult(name?: TupleToUnion<FormItems, 'name'>): void
 
   updateOptions(
     options: FormOptions<
@@ -367,10 +366,10 @@ declare class FormItemsManager<
   getItems<Ids extends (keyof FormItems)[]>(
     ids: Ids,
   ): {
-    [id in keyof FormItems]: FormItems[id] & {
+    [id in TupleUnion<Ids>]: FormItems[id] & {
       id: id
     }
-  }[keyof FormItems][]
+  }[TupleUnion<Ids>][]
 }
 
 export {
@@ -382,6 +381,7 @@ export {
   FormOptions,
   Pristine,
   TupleToUnion,
+  TupleUnion,
   Valid,
   ValidateOnChange,
 }

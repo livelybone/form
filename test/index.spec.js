@@ -3,13 +3,13 @@ const Form = require('../test-lib/index')
 
 describe('FormItemsManagement', () => {
   const items = {
-    name: { field: 'nameField', value: '' },
-    phone: { field: 'phoneField', value: '' },
+    name: { name: 'nameField', value: '' },
+    phone: { name: 'phoneField', value: '' },
   }
   const manager = new Form.FormItemsManager(items)
 
   it('Create success', () => {
-    expect(manager.allItems.name.field).to.equal('nameField')
+    expect(manager.allItems.name.name).to.equal('nameField')
   })
 
   it('Set id', () => {
@@ -17,25 +17,25 @@ describe('FormItemsManagement', () => {
   })
 
   it('Can get item', () => {
-    expect(manager.getItem('name').field).to.equal('nameField')
+    expect(manager.getItem('name').name).to.equal('nameField')
   })
 
   it('Can get items', () => {
-    expect(manager.getItems(['name', 'phone'])[1].field).to.equal('phoneField')
+    expect(manager.getItems(['name', 'phone'])[1].name).to.equal('phoneField')
   })
 })
 
 describe('Form', () => {
   const items = {
-    name: { field: 'nameField', value: '' },
+    name: { name: 'nameField', value: '' },
     phone: {
-      field: 'phoneField',
+      name: 'phoneField',
       value: '',
       validator: (val) => {
         return /^1\d{10}$/.test(val) ? '' : '格式错误'
       },
     },
-    address: { field: 'addressField', value: '' },
+    address: { name: 'addressName', value: '' },
   }
   const manager = new Form.FormItemsManager(items)
 
@@ -50,7 +50,7 @@ describe('Form', () => {
     expect(form.valid).to.equal(true)
     expect(form.data.nameField).to.equal('')
     expect(form.data.phoneField).to.equal('')
-    expect(form.items[1].field).to.equal('phoneField')
+    expect(form.items[1].name).to.equal('phoneField')
   })
 
   it('Item change', () => {
@@ -62,9 +62,9 @@ describe('Form', () => {
   })
 
   it('Item validate', () => {
-    console.log('phone field validate', form.itemValidate('phoneField'))
-    expect(form.getItemByField('phoneField').valid).to.equal(false)
-    expect(form.getItemByField('phoneField').errorText).to.equal('格式错误')
+    console.log('phone name validate', form.itemValidate('phoneField'))
+    expect(form.getItemByName('phoneField').valid).to.equal(false)
+    expect(form.getItemByName('phoneField').errorText).to.equal('格式错误')
   })
 
   it('Form validate', () => {
@@ -80,24 +80,24 @@ describe('Form', () => {
     expect(form.pristine).to.equal(true)
     expect(form.errorText).to.equal('')
     expect(form.data.phoneField).to.equal('')
-    expect(form.getItemByField('phoneField').valid).to.equal(true)
-    expect(form.getItemByField('phoneField').pristine).to.equal(true)
-    expect(form.getItemByField('phoneField').errorText).to.equal('')
+    expect(form.getItemByName('phoneField').valid).to.equal(true)
+    expect(form.getItemByName('phoneField').pristine).to.equal(true)
+    expect(form.getItemByName('phoneField').errorText).to.equal('')
   })
 
   it('Item reset', () => {
     form.itemChange('phoneField', '180')
     form.resetItem('phoneField')
     expect(form.data.phoneField).to.equal('')
-    expect(form.getItemByField('phoneField').valid).to.equal(true)
-    expect(form.getItemByField('phoneField').pristine).to.equal(true)
-    expect(form.getItemByField('phoneField').errorText).to.equal('')
+    expect(form.getItemByName('phoneField').valid).to.equal(true)
+    expect(form.getItemByName('phoneField').pristine).to.equal(true)
+    expect(form.getItemByName('phoneField').errorText).to.equal('')
   })
 
   it('Item clear validate result', () => {
     form.itemChange('phoneField', '180')
     form.clearValidateResult('phoneField')
-    expect(form.getItemByField('phoneField').errorText).to.equal('')
-    expect(form.getItemByField('phoneField').valid).to.equal(true)
+    expect(form.getItemByName('phoneField').errorText).to.equal('')
+    expect(form.getItemByName('phoneField').valid).to.equal(true)
   })
 })

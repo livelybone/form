@@ -47,22 +47,22 @@ import { Form, FormItemsManager } from '@livelybone/form'
 
 /** Manage all the form items in your project or page */
 const formItems = new FormItemsManager({
-  name: { field: 'name', value: '' },
+  name: { name: 'name', value: '' },
   phone: {
-    field: 'phone',
+    name: 'phone',
     value: '',
     validator: (val) => {
       return /^1\d{10}$/.test(val) ? '' : 'Chinese phone number was wrong'
     },
   },
   amount: {
-    field: 'amount', 
+    name: 'amount', 
     value: '', 
     formatter: val => {
       return val.replace(/[^\d]+/g, '')
     }
   },
-  address: { field: 'address', value: '' },
+  address: { name: 'address', value: '' },
 })
 
 /** Choose the items you need to generate a form */
@@ -85,11 +85,11 @@ form.itemChange('phone', '120')
 form.itemChange('amount', 'a-b/1')
 
 /** Get the validate result */
-console.log('Is name valid: ', form.getItemByField('name').valid)
+console.log('Is name valid: ', form.getItemByName('name').valid)
 // -> Is name valid: true
-console.log('Is phone valid: ', form.getItemByField('phone').valid) 
+console.log('Is phone valid: ', form.getItemByName('phone').valid) 
 // -> Is phone valid: false
-console.log('The phone error text is: ', form.getItemByField('phone').errorText) 
+console.log('The phone error text is: ', form.getItemByName('phone').errorText) 
 // -> The form error text is: Chinese phone number was wrong
 console.log('Is form valid: ', form.valid) 
 // -> Is form valid: false
@@ -97,7 +97,7 @@ console.log('The form error text is: ', form.errorText)
 // -> The form error text is: Chinese phone number was wrong
 
 /** The value of amount has been formatted */
-console.log('The value of amount is: ', form.getItemByField('amount').value)
+console.log('The value of amount is: ', form.getItemByName('amount').value)
 // -> The value of amount is: '1'
 
 /** Get the form data */

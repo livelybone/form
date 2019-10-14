@@ -1,4 +1,4 @@
-import { FormItem } from './type'
+import { FormItem, TupleUnion } from './type'
 import { formItemsDictionary } from './utils'
 
 export class FormItemsManager<
@@ -23,6 +23,10 @@ export class FormItemsManager<
   }
 
   getItems<Ids extends (keyof FormItems)[]>(ids: Ids) {
-    return ids.map(this.getItem.bind(this))
+    return ids.map(this.getItem.bind(this)) as {
+      [id in TupleUnion<Ids>]: FormItems[id] & {
+        id: id
+      }
+    }[TupleUnion<Ids>][]
   }
 }

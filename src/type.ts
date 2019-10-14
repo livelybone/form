@@ -26,17 +26,17 @@ export type Valid = boolean
 
 export interface FormItem<
   ValueType extends string | number | boolean,
-  FieldType extends string | number,
+  NameType extends string | number,
   IdType extends string | number
 > {
-  field: FieldType
+  name: NameType
   value: ValueType
   /**
-   * 如果 id 没有定义，它的值将会被置为 field 的值
+   * 如果 id 没有定义，它的值将会被置为 name 的值
    *
-   * If !!id === false, the value of id will be reset to the value of field
+   * If !!id === false, the value of id will be reset to the value of name
    * */
-  id?: IdType | FieldType
+  id?: IdType | NameType
   /**
    * 当检验值为空的表单项时，errorText 需根据 label 生成
    * 比如：`姓名不能为空`，`密码不能为空`
@@ -82,13 +82,7 @@ export interface FormItem<
 }
 
 export interface FormOptions<DT extends {}, ST extends any> {
-  /**
-   * Called in Form.prototype.submit
-   * */
-  onSubmit?(data: DT): Promise<ST>
-
-  initialValues?: DT
-
+  initialValues?: Partial<DT>
   /**
    * formValidate 方法的 validateAll 参数的默认值
    *
@@ -97,9 +91,7 @@ export interface FormOptions<DT extends {}, ST extends any> {
    * Default: false
    * */
   validateAll?: boolean
-
   validateOnChange?: ValidateOnChange
-
   /**
    * 当检验值为空的表单项时，errorText 的生成模板。`{label}` 为表单项 label 属性的占位符
    *
@@ -108,7 +100,6 @@ export interface FormOptions<DT extends {}, ST extends any> {
    * Default: `{label}不能为空`
    * */
   emptyErrorTemplate?: string
-
   /**
    * 提供一些参数，用于实现表单项的动态校验或者动态格式化
    * 比如：不同币种金额的校验，币种的小数位可能会不一样，这时候我们可以提供一个 precision 参数，validator 函数可以从 options 拿到这个参数，从而做对应校验
@@ -123,7 +114,7 @@ export interface FormOptions<DT extends {}, ST extends any> {
    * const formItems = {
    *   asset: {
    *     label: 'asset',
-   *     field: 'asset',
+   *     name: 'asset',
    *     value: 'CNY',
    *     type: 'select',
    *     options: [
@@ -133,7 +124,7 @@ export interface FormOptions<DT extends {}, ST extends any> {
    *   },
    *   amount: {
    *     label: 'amount',
-   *     field: 'amount',
+   *     name: 'amount',
    *     value: '',
    *     validator: (val, { precision }) => {
    *      if (precision <= 0) {
@@ -162,6 +153,11 @@ export interface FormOptions<DT extends {}, ST extends any> {
    * form.updateOptions({ optionsForValidatorAndFormatter: { precision: 4 } })
    * */
   optionsForValidatorAndFormatter?: { [key: string]: any; [key: number]: any }
+
+  /**
+   * Called in Form.prototype.submit
+   * */
+  onSubmit?(data: DT): Promise<ST>
 }
 
 export type TupleToUnion<T, K extends string> = T extends Array<
@@ -179,5 +175,14 @@ export type FormItemsData<
     string | number
   >[]
 > = {
-  [k in TupleToUnion<FormItems, 'field'>]: TupleToUnion<FormItems, 'value'>
+  [k in TupleToUnion<FormItems, 'name'>]: TupleToUnion<FormItems, 'value'>
 }
+
+export type TupleUnion<T> = T extends (infer E)[]
+  ? unknown extends E
+    ? never
+    : E
+  : never
+
+const a = ['1', '2']
+type A = Extract<keyof typeof a, number>
