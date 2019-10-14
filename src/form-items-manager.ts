@@ -13,7 +13,7 @@ export class FormItemsManager<
   }
 
   getItem<Id extends keyof FormItems>(id: Id) {
-    const item = this.allItems[id]
+    const item = { ...this.allItems[id] }
     if (!item) {
       throw new Error(
         `FormItemsManagement: The form item you search for by id \`${id}\` is not exist, please make sure param id correct`,
