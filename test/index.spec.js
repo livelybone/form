@@ -43,7 +43,11 @@ describe('Form', () => {
 
   const formItems = manager.getItems(['name', 'phone'])
 
-  const form = new Form.Form(formItems)
+  const form = new Form.Form(formItems, {
+    componentUpdateFn() {
+      console.log('component update')
+    }
+  })
 
   it('Create success', () => {
     expect(form.pristine).to.equal(true)

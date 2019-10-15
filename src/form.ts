@@ -114,6 +114,8 @@ export class Form<
       const { validateOnChange = this.options.validateOnChange } = item
       if (validateOnChange) itemValidate(item, this.options)
       else item.pristine = false
+
+      if (this.options.componentUpdateFn) this.options.componentUpdateFn()
     } else console.error("Form: The name isn't exist in this form")
   }
 
@@ -124,7 +126,11 @@ export class Form<
    * */
   itemValidate(name: TupleToUnion<FormItems, 'name'>): ErrorText {
     const item = this.getItemByName(name)
-    if (item) return itemValidate(item, this.options)
+    if (item) {
+      const err = itemValidate(item, this.options)
+      if (this.options.componentUpdateFn) this.options.componentUpdateFn()
+      return err
+    }
     return 'The name isn\'t exist in this form'
   }
 
@@ -154,6 +160,8 @@ export class Form<
       if (!errorTxt) errorTxt = err
     }
 
+    if (this.options.componentUpdateFn) this.options.componentUpdateFn()
+
     return errorTxt
   }
 
@@ -168,7 +176,10 @@ export class Form<
 
     const errorText = this.formValidate()
     if (!errorText) {
-      return this.options.onSubmit(this.data)
+      return this.options.onSubmit(this.data).then(res => {
+        if (this.options.componentUpdateFn) this.options.componentUpdateFn()
+        return res
+      })
     }
     return Promise.reject(new Error(errorText))
   }
@@ -183,6 +194,8 @@ export class Form<
   reset(values: FormItemsData<FormItems> = this.options.initialValues): void {
     this.updateOptions({ initialValues: values })
     this.items = init(this.items, this.options)
+
+    if (this.options.componentUpdateFn) this.options.componentUpdateFn()
   }
 
   /**
@@ -204,6 +217,8 @@ export class Form<
         ? item.formatter(value, this.options.optionsForValidatorAndFormatter)
         : value
       clearValidateRes(item)
+
+      if (this.options.componentUpdateFn) this.options.componentUpdateFn()
     } else console.error("Form: The name isn't exist in this form")
   }
 
@@ -224,6 +239,8 @@ export class Form<
     } else {
       this.items.forEach(clearValidateRes)
     }
+
+    if (this.options.componentUpdateFn) this.options.componentUpdateFn()
   }
 
   updateOptions(
@@ -252,5 +269,7 @@ export class Form<
       ...this.options.optionsForValidatorAndFormatter,
       ...options.optionsForValidatorAndFormatter,
     }
+    this.options.componentUpdateFn =
+      options.componentUpdateFn || this.options.componentUpdateFn
   }
 }
