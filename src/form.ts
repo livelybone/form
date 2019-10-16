@@ -135,14 +135,14 @@ export class Form<
   }
 
   /**
-   * @desc 校验整个表单，更新表单实例属性：valid, pristine, errorText, data, items
+   * @desc 校验整个表单
    * @param validateAll   是否校验所有表单项
    *                      true - 校验所有表单项
    *                      false - 当遇到第一个校验错误的表单项时，停止对其他表单项的校验
    *
    *                      默认值: this.options.validateAll
    *
-   * @desc Form validate, update the value of properties: valid, pristine, errorText, data, items
+   * @desc Form validate
    * @param validateAll   Whether validate all the form item in the form
    *                      true - validate all
    *                      false - stop validate other form items when the first form item with a validation error is encountered

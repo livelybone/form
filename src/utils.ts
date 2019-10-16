@@ -5,7 +5,6 @@ export function itemValidate<
   Item extends FormItem<any, any, any>,
   Options extends Required<FormOptions<any, any>>
 >(item: Item, options: Options) {
-  item.pristine = false
   item.errorText =
     item.required !== false && !item.value
       ? options.emptyErrorTemplate.replace('{label}', item.label || '')
