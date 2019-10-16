@@ -285,7 +285,10 @@ declare class Form<
    *
    * @desc Validate the value of the form item that matched the param `name`
    * */
-  itemValidate(name: TupleToUnion<FormItems, 'name'>): ErrorText
+  itemValidate(
+    name: TupleToUnion<FormItems, 'name'>,
+    updatePristine?: boolean,
+  ): ErrorText
 
   /**
    * @desc 校验整个表单

@@ -124,9 +124,13 @@ export class Form<
    *
    * @desc Validate the value of the form item that matched the param `name`
    * */
-  itemValidate(name: TupleToUnion<FormItems, 'name'>): ErrorText {
+  itemValidate(
+    name: TupleToUnion<FormItems, 'name'>,
+    updatePristine?: boolean,
+  ): ErrorText {
     const item = this.getItemByName(name)
     if (item) {
+      if (updatePristine) item.pristine = false
       const err = itemValidate(item, this.options)
       if (this.options.componentUpdateFn) this.options.componentUpdateFn()
       return err
