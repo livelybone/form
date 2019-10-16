@@ -189,6 +189,3 @@ export type TupleUnion<T> = T extends (infer E)[]
     ? never
     : E
   : never
-
-const a = ['1', '2']
-type A = Extract<keyof typeof a, number>
