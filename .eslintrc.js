@@ -14,6 +14,7 @@ module.exports = {
   ],
   'rules': {
     'import/prefer-default-export': 'off',
+    'no-param-reassign': 'off',
     'no-useless-constructor': 'off',
     'no-nested-ternary': 'off',
     'no-undef': 'off',

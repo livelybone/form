@@ -1,4 +1,3 @@
-/* eslint-disable no-param-reassign */
 import { FormItem, FormOptions } from './type'
 
 export function itemValidate<

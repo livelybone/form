@@ -41,7 +41,7 @@ describe('Form', () => {
 
   console.log(manager)
 
-  const formItems = manager.getItems(['name', 'phone'])
+  const formItems = manager.getItems(['name', 'phone', 'address'])
 
   const form = new Form.Form(formItems, {
     componentUpdateFn() {
@@ -103,5 +103,13 @@ describe('Form', () => {
     form.clearValidateResult('phoneField')
     expect(form.getItemByName('phoneField').errorText).to.equal('')
     expect(form.getItemByName('phoneField').valid).to.equal(true)
+  })
+
+  it('Update validate result', () => {
+    form.updateValidateResult({ nameField: 'name is invalid', addressName: '' })
+    expect(form.getItemByName('nameField').errorText).to.equal('name is invalid')
+    expect(form.getItemByName('nameField').valid).to.equal(false)
+    expect(form.getItemByName('addressName').valid).to.equal(true)
+    expect(form.getItemByName('addressName').errorText).to.equal('')
   })
 })

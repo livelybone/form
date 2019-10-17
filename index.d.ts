@@ -291,6 +291,17 @@ declare class Form<
   ): ErrorText
 
   /**
+   * @desc 从外部更新表单项的校验结果，这个可以用于异步校验
+   *
+   * @desc Update the validate result outside, it is useful for async validate
+   * */
+  updateValidateResult(
+    results: {
+      [key in TupleToUnion<FormItems, 'name'>]: ErrorText
+    },
+  ): void
+
+  /**
    * @desc 校验整个表单
    * @param validateAll   是否校验所有表单项
    *                      true - 校验所有表单项
