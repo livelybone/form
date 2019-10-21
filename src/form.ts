@@ -113,7 +113,10 @@ export class Form<
 
       const { validateOnChange = this.options.validateOnChange } = item
       if (validateOnChange) itemValidate(item, this.options)
-      else item.pristine = false
+      else {
+        item.pristine = false
+        item.errorText = ''
+      }
 
       if (this.options.componentUpdateFn) this.options.componentUpdateFn()
     } else console.error("Form: The name isn't exist in this form")
