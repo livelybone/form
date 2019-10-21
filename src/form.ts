@@ -118,6 +118,8 @@ export class Form<
         item.errorText = ''
       }
 
+      this.errorText = ''
+
       if (this.options.componentUpdateFn) this.options.componentUpdateFn()
     } else console.error("Form: The name isn't exist in this form")
   }
