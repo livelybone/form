@@ -203,13 +203,12 @@ export class Form<
     this.errorText = ''
 
     const errorText = this.formValidate()
-    if (!errorText) {
-      return this.options.onSubmit(this.data).then(res => {
-        if (this.options.componentUpdateFn) this.options.componentUpdateFn()
-        return res
-      })
-    }
-    return Promise.reject(new Error(errorText))
+    return (!errorText
+      ? this.options.onSubmit(this.data)
+      : Promise.reject(new Error(errorText))
+    ).finally(() => {
+      if (this.options.componentUpdateFn) this.options.componentUpdateFn()
+    })
   }
 
   /**
