@@ -152,10 +152,15 @@ export class Form<
     results: { [key in TupleToUnion<FormItems, 'name'>]: ErrorText },
   ) {
     this.items.forEach(item => {
-      const errorText = results[item.name as TupleToUnion<FormItems, 'name'>]
-      if (errorText) {
-        item.valid = false
-        item.errorText = errorText
+      if (item.name in results) {
+        const errorText = results[item.name as TupleToUnion<FormItems, 'name'>]
+        if (errorText) {
+          item.valid = false
+          item.errorText = errorText
+        } else {
+          item.valid = true
+          item.errorText = ''
+        }
       }
     })
 
