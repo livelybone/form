@@ -23,7 +23,7 @@ declare type ValidateOnChange = boolean
 declare type Valid = boolean
 
 interface FormItem<
-  ValueType extends string | number | boolean,
+  ValueType extends any,
   NameType extends string | number,
   IdType extends string | number
 > {
@@ -177,11 +177,7 @@ declare type TupleToUnion<T, K extends string> = T extends Array<
     : E
   : never
 declare type FormItemsData<
-  FormItems extends FormItem<
-    string | number | boolean,
-    string | number,
-    string | number
-  >[]
+  FormItems extends FormItem<any, string | number, string | number>[]
 > = {
   [k in TupleToUnion<FormItems, 'name'>]: TupleToUnion<FormItems, 'value'>
 }

@@ -25,7 +25,7 @@ export type ValidateOnChange = boolean
 export type Valid = boolean
 
 export interface FormItem<
-  ValueType extends string | number | boolean,
+  ValueType extends any,
   NameType extends string | number,
   IdType extends string | number
 > {
@@ -175,11 +175,7 @@ export type TupleToUnion<T, K extends string> = T extends Array<
   : never
 
 export type FormItemsData<
-  FormItems extends FormItem<
-    string | number | boolean,
-    string | number,
-    string | number
-  >[]
+  FormItems extends FormItem<any, string | number, string | number>[]
 > = {
   [k in TupleToUnion<FormItems, 'name'>]: TupleToUnion<FormItems, 'value'>
 }
