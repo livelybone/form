@@ -376,6 +376,7 @@ declare class FormItemsManager<
     id: Id,
   ): {
     [id in keyof FormItems]: FormItems[id] & {
+      [k: string]: any
       id: id
     }
   }[Id]
@@ -384,6 +385,7 @@ declare class FormItemsManager<
     ids: Ids,
   ): {
     [id in TupleUnion<Ids>]: FormItems[id] & {
+      [k: string]: any
       id: id
     }
   }[TupleUnion<Ids>][]

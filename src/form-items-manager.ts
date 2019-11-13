@@ -5,7 +5,7 @@ export class FormItemsManager<
   FormItems extends { [id: string]: FormItem<any, any, any> }
 > {
   private readonly allItems: {
-    [id in keyof FormItems]: FormItems[id] & { id: id }
+    [id in keyof FormItems]: FormItems[id] & { id: id; [k: string]: any }
   }
 
   constructor(formItems: FormItems) {
@@ -26,6 +26,7 @@ export class FormItemsManager<
     return ids.map(this.getItem.bind(this)) as {
       [id in TupleUnion<Ids>]: FormItems[id] & {
         id: id
+        [k: string]: any
       }
     }[TupleUnion<Ids>][]
   }
