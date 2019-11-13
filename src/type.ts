@@ -166,13 +166,27 @@ export interface FormOptions<DT extends {}, ST extends any> {
   componentUpdateFn?(): void
 }
 
-export type TupleToUnion<T, K extends string> = T extends Array<
-  { [k in K]: infer E }
->
+export type TupleToUnion<
+  T,
+  K extends string,
+  FallbackType = any
+> = T extends Array<{ [k in K]: infer E }>
   ? unknown extends E
-    ? never
+    ? FallbackType
     : E
-  : never
+  : FallbackType
+
+export type FormName<
+  FormItems extends FormItem<any, any, any>[]
+> = TupleToUnion<FormItems, 'name', string | number>
+export type FormValue<
+  FormItems extends FormItem<any, any, any>[]
+> = TupleToUnion<FormItems, 'value', any>
+export type FormId<FormItems extends FormItem<any, any, any>[]> = TupleToUnion<
+  FormItems,
+  'id',
+  string | number
+>
 
 export type FormItemsData<
   FormItems extends FormItem<any, string | number, string | number>[]

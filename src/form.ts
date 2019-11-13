@@ -1,13 +1,15 @@
 import {
   ErrorText,
+  FormId,
   FormItem,
   FormItemsData,
+  FormName,
   FormOptions,
+  FormValue,
   Pristine,
-  TupleToUnion,
   Valid,
 } from './type'
-import { clearValidateRes, init, itemValidate } from './utils'
+import { clearValidateRes, init, itemChange, itemValidate } from './utils'
 
 export class Form<
   FormItems extends FormItem<any, any, any>[],
@@ -21,11 +23,13 @@ export class Form<
   items!: Array<
     {
       [index in Extract<keyof FormItems, number>]: FormItems[index] & {
-        id: TupleToUnion<FormItems, 'id'> | TupleToUnion<FormItems, 'name'>
+        id: FormId<FormItems> | FormName<FormItems>
         required: boolean
         pristine: Pristine
         valid: Valid
         errorText: string
+        [key: string]: any
+        [key: number]: any
       }
     }[Extract<keyof FormItems, number>]
   >
@@ -86,13 +90,11 @@ export class Form<
     this.$errorText = errorText
   }
 
-  getItemByName(name: TupleToUnion<FormItems, 'name'>) {
+  getItemByName(name: FormName<FormItems>) {
     return this.items.find(item => item.name === name)
   }
 
-  getItemById(
-    id: TupleToUnion<FormItems, 'id'> | TupleToUnion<FormItems, 'name'>,
-  ) {
+  getItemById(id: FormId<FormItems> | FormName<FormItems>) {
     return this.items.find(item => item.id === id)
   }
 
@@ -101,27 +103,32 @@ export class Form<
    *
    * @desc Update the value of the form item that matched the param `name`
    * */
-  itemChange(
-    name: TupleToUnion<FormItems, 'name'>,
-    value: TupleToUnion<FormItems, 'value'>,
-  ): void {
+  itemChange(name: FormName<FormItems>, value: FormValue<FormItems>): void {
     const item = this.getItemByName(name)
     if (item) {
-      item.value = item.formatter
-        ? item.formatter(value, this.options.optionsForValidatorAndFormatter)
-        : value
-
-      const { validateOnChange = this.options.validateOnChange } = item
-      if (validateOnChange) itemValidate(item, this.options)
-      else {
-        item.pristine = false
-        item.errorText = ''
-      }
+      itemChange(item, value, this.options)
 
       this.errorText = ''
-
       if (this.options.componentUpdateFn) this.options.componentUpdateFn()
     } else console.error("Form: The name isn't exist in this form")
+  }
+
+  /**
+   * @desc 批量更新与表单项的值
+   *
+   * @desc Batch updates with the values of form items
+   * */
+  itemsChange(
+    values: {
+      [k in FormName<FormItems>]: FormValue<FormItems>
+    },
+  ): void {
+    this.items.forEach(item => {
+      const name = item.name as FormName<FormItems>
+      if (name in values) itemChange(item, values[name], this.options)
+    })
+    this.errorText = ''
+    if (this.options.componentUpdateFn) this.options.componentUpdateFn()
   }
 
   /**
@@ -129,10 +136,7 @@ export class Form<
    *
    * @desc Validate the value of the form item that matched the param `name`
    * */
-  itemValidate(
-    name: TupleToUnion<FormItems, 'name'>,
-    updatePristine?: boolean,
-  ): ErrorText {
+  itemValidate(name: FormName<FormItems>, updatePristine?: boolean): ErrorText {
     const item = this.getItemByName(name)
     if (item) {
       if (updatePristine) item.pristine = false
@@ -148,12 +152,10 @@ export class Form<
    *
    * @desc Update the validate result outside, it is useful for async validate
    * */
-  updateValidateResult(
-    results: { [key in TupleToUnion<FormItems, 'name'>]: ErrorText },
-  ) {
+  updateValidateResult(results: { [key in FormName<FormItems>]: ErrorText }) {
     this.items.forEach(item => {
       if (item.name in results) {
-        const errorText = results[item.name as TupleToUnion<FormItems, 'name'>]
+        const errorText = results[item.name as FormName<FormItems>]
         if (errorText) {
           item.valid = false
           item.errorText = errorText
@@ -239,8 +241,8 @@ export class Form<
    * @param value              Default: this.options.initialValues[name]
    * */
   resetItem(
-    name: TupleToUnion<FormItems, 'name'>,
-    value: TupleToUnion<FormItems, 'value'> = this.options.initialValues[name],
+    name: FormName<FormItems>,
+    value: FormValue<FormItems> = this.options.initialValues[name],
   ): void {
     const item = this.getItemByName(name)
     if (item) {
@@ -262,7 +264,7 @@ export class Form<
    * @param [name]            If `!!name === true`, it will clear the validate result of the form item that matched the param name
    *                           else, if will clear the validate result of the form
    * */
-  clearValidateResult(name?: TupleToUnion<FormItems, 'name'>): void {
+  clearValidateResult(name?: FormName<FormItems>): void {
     if (name) {
       const item = this.getItemByName(name)
       if (item) {

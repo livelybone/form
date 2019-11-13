@@ -46,7 +46,7 @@ describe('Form', () => {
   const form = new Form.Form(formItems, {
     componentUpdateFn() {
       console.log('component update')
-    }
+    },
   })
 
   it('Create success', () => {
@@ -59,6 +59,15 @@ describe('Form', () => {
 
   it('Item change', () => {
     form.itemChange('phoneField', '180')
+    expect(form.pristine).to.equal(false)
+    expect(form.data.phoneField).to.equal('180')
+    expect(form.items[1].pristine).to.equal(false)
+    expect(form.items[0].pristine).to.equal(true)
+    form.reset()
+  })
+
+  it('Items change', () => {
+    form.itemsChange({ 'phoneField': '180' })
     expect(form.pristine).to.equal(false)
     expect(form.data.phoneField).to.equal('180')
     expect(form.items[1].pristine).to.equal(false)

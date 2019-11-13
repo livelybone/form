@@ -167,15 +167,30 @@ interface FormOptions<DT extends {}, ST extends any> {
   componentUpdateFn?(): void
 }
 
-declare type TupleToUnion<T, K extends string> = T extends Array<
+declare type TupleToUnion<
+  T,
+  K extends string,
+  FallbackType = any
+> = T extends Array<
   {
     [k in K]: infer E
   }
 >
   ? unknown extends E
-    ? never
+    ? FallbackType
     : E
-  : never
+  : FallbackType
+declare type FormName<
+  FormItems extends FormItem<any, any, any>[]
+> = TupleToUnion<FormItems, 'name', string | number>
+declare type FormValue<
+  FormItems extends FormItem<any, any, any>[]
+> = TupleToUnion<FormItems, 'value', any>
+declare type FormId<FormItems extends FormItem<any, any, any>[]> = TupleToUnion<
+  FormItems,
+  'id',
+  string | number
+>
 declare type FormItemsData<
   FormItems extends FormItem<any, string | number, string | number>[]
 > = {
@@ -199,11 +214,13 @@ declare class Form<
   items: Array<
     {
       [index in Extract<keyof FormItems, number>]: FormItems[index] & {
-        id: TupleToUnion<FormItems, 'id'> | TupleToUnion<FormItems, 'name'>
+        id: FormId<FormItems> | FormName<FormItems>
         required: boolean
         pristine: Pristine
         valid: Valid
         errorText: string
+        [key: string]: any
+        [key: number]: any
       }
     }[Extract<keyof FormItems, number>]
   >
@@ -239,11 +256,13 @@ declare class Form<
   errorText: ErrorText
 
   getItemByName(
-    name: TupleToUnion<FormItems, 'name'>,
+    name: FormName<FormItems>,
   ):
     | {
         [index in Extract<keyof FormItems, number>]: FormItems[index] & {
-          id: TupleToUnion<FormItems, 'id'> | TupleToUnion<FormItems, 'name'>
+          [key: string]: any
+          [key: number]: any
+          id: TupleToUnion | TupleToUnion
           required: boolean
           pristine: boolean
           valid: boolean
@@ -253,11 +272,13 @@ declare class Form<
     | undefined
 
   getItemById(
-    id: TupleToUnion<FormItems, 'id'> | TupleToUnion<FormItems, 'name'>,
+    id: FormId<FormItems> | FormName<FormItems>,
   ):
     | {
         [index in Extract<keyof FormItems, number>]: FormItems[index] & {
-          id: TupleToUnion<FormItems, 'id'> | TupleToUnion<FormItems, 'name'>
+          [key: string]: any
+          [key: number]: any
+          id: TupleToUnion | TupleToUnion
           required: boolean
           pristine: boolean
           valid: boolean
@@ -271,9 +292,17 @@ declare class Form<
    *
    * @desc Update the value of the form item that matched the param `name`
    * */
-  itemChange(
-    name: TupleToUnion<FormItems, 'name'>,
-    value: TupleToUnion<FormItems, 'value'>,
+  itemChange(name: FormName<FormItems>, value: FormValue<FormItems>): void
+
+  /**
+   * @desc 批量更新与表单项的值
+   *
+   * @desc Batch updates with the values of form items
+   * */
+  itemsChange(
+    values: {
+      [k in FormName<FormItems>]: FormValue<FormItems>
+    },
   ): void
 
   /**
@@ -281,10 +310,7 @@ declare class Form<
    *
    * @desc Validate the value of the form item that matched the param `name`
    * */
-  itemValidate(
-    name: TupleToUnion<FormItems, 'name'>,
-    updatePristine?: boolean,
-  ): ErrorText
+  itemValidate(name: FormName<FormItems>, updatePristine?: boolean): ErrorText
 
   /**
    * @desc 从外部更新表单项的校验结果，这个可以用于异步校验
@@ -293,7 +319,7 @@ declare class Form<
    * */
   updateValidateResult(
     results: {
-      [key in TupleToUnion<FormItems, 'name'>]: ErrorText
+      [key in FormName<FormItems>]: ErrorText
     },
   ): void
 
@@ -340,10 +366,7 @@ declare class Form<
    * @param name
    * @param value              Default: this.options.initialValues[name]
    * */
-  resetItem(
-    name: TupleToUnion<FormItems, 'name'>,
-    value?: TupleToUnion<FormItems, 'value'>,
-  ): void
+  resetItem(name: FormName<FormItems>, value?: FormValue<FormItems>): void
 
   /**
    * @desc 清除表单/表单项的校验结果
@@ -353,7 +376,7 @@ declare class Form<
    * @param [name]            If `!!name === true`, it will clear the validate result of the form item that matched the param name
    *                           else, if will clear the validate result of the form
    * */
-  clearValidateResult(name?: TupleToUnion<FormItems, 'name'>): void
+  clearValidateResult(name?: FormName<FormItems>): void
 
   updateOptions(
     options: FormOptions<
@@ -376,7 +399,8 @@ declare class FormItemsManager<
     id: Id,
   ): {
     [id in keyof FormItems]: FormItems[id] & {
-      [k: string]: any
+      [key: string]: any
+      [key: number]: any
       id: id
     }
   }[Id]
@@ -385,7 +409,8 @@ declare class FormItemsManager<
     ids: Ids,
   ): {
     [id in TupleUnion<Ids>]: FormItems[id] & {
-      [k: string]: any
+      [key: string]: any
+      [key: number]: any
       id: id
     }
   }[TupleUnion<Ids>][]
@@ -394,10 +419,13 @@ declare class FormItemsManager<
 export {
   ErrorText,
   Form,
+  FormId,
   FormItem,
   FormItemsData,
   FormItemsManager,
+  FormName,
   FormOptions,
+  FormValue,
   Pristine,
   TupleToUnion,
   TupleUnion,

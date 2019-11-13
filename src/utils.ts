@@ -15,6 +15,23 @@ export function itemValidate<
   return item.errorText
 }
 
+export function itemChange<
+  Item extends FormItem<any, any, any>,
+  Value extends any,
+  Options extends Required<FormOptions<any, any>>
+>(item: Item, value: Value, options: Options) {
+  item.value = item.formatter
+    ? item.formatter(value, options.optionsForValidatorAndFormatter)
+    : value
+
+  const { validateOnChange = options.validateOnChange } = item
+  if (validateOnChange) itemValidate(item, options)
+  else {
+    item.pristine = false
+    item.errorText = ''
+  }
+}
+
 export function init<
   Items extends FormItem<any, any, any>[],
   Options extends Required<FormOptions<any, any>>

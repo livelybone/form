@@ -79,8 +79,9 @@ const form = new Form(
 
 /** 更新表单的值 */
 form.itemChange('name', 'livelybone')
-form.itemChange('phone', '120')
-form.itemChange('amount', 'a-b/1')
+
+/** 批量更新表单的值 */
+form.itemsChange({ phone: '120', amount: 'a-b/1' })
 
 /** 你可以看到表单的校验情况 */
 console.log('Is name valid: ', form.getItemByName('name').valid)

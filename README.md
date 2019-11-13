@@ -81,8 +81,9 @@ const form = new Form(
 
 /** Change the value of form item */
 form.itemChange('name', 'livelybone')
-form.itemChange('phone', '120')
-form.itemChange('amount', 'a-b/1')
+
+/** Batch update value of form items */
+form.itemsChange({ phone: '120', amount: 'a-b/1' })
 
 /** Get the validate result */
 console.log('Is name valid: ', form.getItemByName('name').valid)
