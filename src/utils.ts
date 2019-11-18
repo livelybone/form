@@ -2,13 +2,17 @@ import { FormItem, FormOptions } from './type'
 
 export function itemValidate<
   Item extends FormItem<any, any, any>,
+  FormData extends any,
   Options extends Required<FormOptions<any, any>>
->(item: Item, options: Options) {
+>(item: Item, formData: FormData, options: Options) {
   item.errorText =
     item.required !== false && !item.value
       ? options.emptyErrorTemplate.replace('{label}', item.label || '')
       : item.validator
-      ? item.validator(item.value, options.optionsForValidatorAndFormatter)
+      ? item.validator(item.value, {
+          ...formData,
+          ...options.optionsForValidatorAndFormatter,
+        })
       : ''
   item.valid = !item.errorText
 
@@ -18,14 +22,18 @@ export function itemValidate<
 export function itemChange<
   Item extends FormItem<any, any, any>,
   Value extends any,
+  FormData extends any,
   Options extends Required<FormOptions<any, any>>
->(item: Item, value: Value, options: Options) {
+>(item: Item, value: Value, formData: FormData, options: Options) {
   item.value = item.formatter
-    ? item.formatter(value, options.optionsForValidatorAndFormatter)
+    ? item.formatter(value, {
+        ...formData,
+        ...options.optionsForValidatorAndFormatter,
+      })
     : value
 
   const { validateOnChange = options.validateOnChange } = item
-  if (validateOnChange) itemValidate(item, options)
+  if (validateOnChange) itemValidate(item, formData, options)
   else {
     item.pristine = false
     item.errorText = ''
@@ -36,14 +44,20 @@ export function init<
   Items extends FormItem<any, any, any>[],
   Options extends Required<FormOptions<any, any>>
 >(items: Items, options: Options) {
-  const values = options.initialValues || {}
+  const values = { ...options.initialValues }
 
   return items.map(item => {
     const $value =
       values[item.name] !== undefined ? values[item.name] : item.value
+
     const value = item.formatter
-      ? item.formatter($value, options.optionsForValidatorAndFormatter)
+      ? item.formatter($value, {
+          ...values,
+          ...options.optionsForValidatorAndFormatter,
+        })
       : $value
+
+    values[item.name] = value
 
     return {
       ...item,

@@ -106,7 +106,7 @@ export class Form<
   itemChange(name: FormName<FormItems>, value: FormValue<FormItems>): void {
     const item = this.getItemByName(name)
     if (item) {
-      itemChange(item, value, this.options)
+      itemChange(item, value, this.data, this.options)
 
       this.errorText = ''
       if (this.options.componentUpdateFn) this.options.componentUpdateFn()
@@ -125,7 +125,8 @@ export class Form<
   ): void {
     this.items.forEach(item => {
       const name = item.name as FormName<FormItems>
-      if (name in values) itemChange(item, values[name], this.options)
+      if (name in values)
+        itemChange(item, values[name], this.data, this.options)
     })
     this.errorText = ''
     if (this.options.componentUpdateFn) this.options.componentUpdateFn()
@@ -140,7 +141,7 @@ export class Form<
     const item = this.getItemByName(name)
     if (item) {
       if (updatePristine) item.pristine = false
-      const err = itemValidate(item, this.options)
+      const err = itemValidate(item, this.data, this.options)
       if (this.options.componentUpdateFn) this.options.componentUpdateFn()
       return err
     }
@@ -191,7 +192,7 @@ export class Form<
 
     for (let i = 0; i < this.items.length; i += 1) {
       if (!validateAll && errorTxt) break
-      const err = itemValidate(this.items[i], this.options)
+      const err = itemValidate(this.items[i], this.data, this.options)
       if (!errorTxt) errorTxt = err
     }
 
@@ -250,7 +251,10 @@ export class Form<
     if (item) {
       item.pristine = true
       item.value = item.formatter
-        ? item.formatter(value, this.options.optionsForValidatorAndFormatter)
+        ? item.formatter(value, {
+            ...this.data,
+            ...this.options.optionsForValidatorAndFormatter,
+          })
         : value
       clearValidateRes(item)
 

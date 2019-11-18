@@ -67,18 +67,29 @@ export interface FormItem<
   /**
    * 这个表单项的校验函数
    *
+   * @params formDataAndOptions           form.options.optionsForValidatorAndFormatter 与 form.data 的结合
+   *
+   *
    * Validate function of the form item
+   *
+   * @options formDataAndOptions          The combination of `form.options.optionsForValidatorAndFormatter` and `form.data`
    *
    * Default: (val) => ''
    * */
-  validator?(value: ValueType, options?: any): ErrorText
+  validator?(value: ValueType, formDataAndOptions: any): ErrorText
 
   /**
    * 格式化函数，每当值发生变化时触发
    *
+   * @params formDataAndOptions           form.options.optionsForValidatorAndFormatter 与 form.data 的结合
+   *
    * Format the value when the value changes
+   *
+   * @options formDataAndOptions          The combination of `form.options.optionsForValidatorAndFormatter` and `form.data`
+   *
+   * Default: val => val
    * */
-  formatter?(value: ValueType, options?: any): ValueType
+  formatter?(value: ValueType, formDataAndOptions: any): ValueType
 }
 
 export interface FormOptions<DT extends {}, ST extends any> {
