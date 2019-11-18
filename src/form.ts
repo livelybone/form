@@ -225,7 +225,9 @@ export class Form<
    *
    * @param values             Default: this.options.initialValues
    * */
-  reset(values: FormItemsData<FormItems> = this.options.initialValues): void {
+  reset(
+    values: Partial<FormItemsData<FormItems>> = this.options.initialValues,
+  ): void {
     this.updateOptions({ initialValues: values })
     this.items = init(this.items, this.options)
 

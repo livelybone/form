@@ -356,7 +356,7 @@ declare class Form<
    *
    * @param values             Default: this.options.initialValues
    * */
-  reset(values?: FormItemsData<FormItems>): void
+  reset(values?: Partial<FormItemsData<FormItems>>): void
 
   /**
    * @desc 用参数 value 的值重置与参数 name 对应的表单项
