@@ -210,3 +210,12 @@ export type TupleUnion<T> = T extends (infer E)[]
     ? never
     : E
   : never
+
+/**
+ * 是否要更新组件
+ *
+ * Whether should update the component
+ *
+ * Default: true
+ * */
+export type ShouldUpdateComponent = boolean

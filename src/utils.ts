@@ -1,4 +1,4 @@
-import { FormItem, FormOptions } from './type'
+import { FormItem, FormItemsData, FormOptions } from './type'
 
 export function itemValidate<
   Item extends FormItem<any, any, any>,
@@ -46,7 +46,8 @@ export function init<
 >(items: Items, options: Options) {
   const values = { ...options.initialValues }
 
-  return items.map(item => {
+  const data = {} as FormItemsData<Items>
+  const $items = items.map(item => {
     const $value =
       values[item.name] !== undefined ? values[item.name] : item.value
 
@@ -58,6 +59,7 @@ export function init<
       : $value
 
     values[item.name] = value
+    data[item.name as keyof FormItemsData<Items>] = value
 
     return {
       ...item,
@@ -69,6 +71,7 @@ export function init<
       errorText: '',
     }
   })
+  return { data, items: $items }
 }
 
 export function clearValidateRes<Item extends FormItem<any, any, any>>(
