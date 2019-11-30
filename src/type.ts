@@ -202,7 +202,7 @@ export type FormId<FormItems extends FormItem<any, any, any>[]> = TupleToUnion<
 export type FormItemsData<
   FormItems extends FormItem<any, string | number, string | number>[]
 > = {
-  [k in TupleToUnion<FormItems, 'name'>]: TupleToUnion<FormItems, 'value'>
+  [k in FormName<FormItems>]: FormValue<FormItems>
 }
 
 export type TupleUnion<T> = T extends (infer E)[]

@@ -205,7 +205,7 @@ declare type FormId<FormItems extends FormItem<any, any, any>[]> = TupleToUnion<
 declare type FormItemsData<
   FormItems extends FormItem<any, string | number, string | number>[]
 > = {
-  [k in TupleToUnion<FormItems, 'name'>]: TupleToUnion<FormItems, 'value'>
+  [k in FormName<FormItems>]: FormValue<FormItems>
 }
 declare type TupleUnion<T> = T extends (infer E)[]
   ? unknown extends E
@@ -221,6 +221,18 @@ declare type TupleUnion<T> = T extends (infer E)[]
  * */
 declare type ShouldUpdateComponent = boolean
 
+declare type Item<FormItems extends any[]> = {
+  [index in Extract<keyof FormItems, number>]: FormItems[index] & {
+    id: FormId<FormItems> | FormName<FormItems>
+    required: boolean
+    pristine: Pristine
+    valid: Valid
+    errorText: string
+    [key: string]: any
+    [key: number]: any
+  }
+}[Extract<keyof FormItems, number>]
+
 declare class Form<
   FormItems extends FormItem<any, any, any>[],
   ReturnTypeOfSubmit extends any
@@ -230,19 +242,7 @@ declare class Form<
    *
    * @desc Array of form items
    * */
-  items: Array<
-    {
-      [index in Extract<keyof FormItems, number>]: FormItems[index] & {
-        id: FormId<FormItems> | FormName<FormItems>
-        required: boolean
-        pristine: Pristine
-        valid: Valid
-        errorText: string
-        [key: string]: any
-        [key: number]: any
-      }
-    }[Extract<keyof FormItems, number>]
-  >
+  items: Array<Item<FormItems>>
 
   $errorText: ErrorText
 
@@ -274,37 +274,11 @@ declare class Form<
    * */
   errorText: ErrorText
 
-  getItemByName(
-    name: FormName<FormItems>,
-  ):
-    | {
-        [index in Extract<keyof FormItems, number>]: FormItems[index] & {
-          [key: string]: any
-          [key: number]: any
-          id: TupleToUnion | TupleToUnion
-          required: boolean
-          pristine: boolean
-          valid: boolean
-          errorText: string
-        }
-      }[Extract<keyof FormItems, number>]
-    | undefined
+  getItemByName(name: FormName<FormItems>): Item<FormItems> | undefined
 
   getItemById(
     id: FormId<FormItems> | FormName<FormItems>,
-  ):
-    | {
-        [index in Extract<keyof FormItems, number>]: FormItems[index] & {
-          [key: string]: any
-          [key: number]: any
-          id: TupleToUnion | TupleToUnion
-          required: boolean
-          pristine: boolean
-          valid: boolean
-          errorText: string
-        }
-      }[Extract<keyof FormItems, number>]
-    | undefined
+  ): Item<FormItems> | undefined
 
   /**
    * @desc 更新与参数 name 对应的表单项的值

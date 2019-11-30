@@ -12,6 +12,18 @@ import {
 } from './type'
 import { clearValidateRes, init, itemChange, itemValidate } from './utils'
 
+type Item<FormItems extends any[]> = {
+  [index in Extract<keyof FormItems, number>]: FormItems[index] & {
+    id: FormId<FormItems> | FormName<FormItems>
+    required: boolean
+    pristine: Pristine
+    valid: Valid
+    errorText: string
+    [key: string]: any
+    [key: number]: any
+  }
+}[Extract<keyof FormItems, number>]
+
 export class Form<
   FormItems extends FormItem<any, any, any>[],
   ReturnTypeOfSubmit extends any
@@ -21,19 +33,7 @@ export class Form<
    *
    * @desc Array of form items
    * */
-  items!: Array<
-    {
-      [index in Extract<keyof FormItems, number>]: FormItems[index] & {
-        id: FormId<FormItems> | FormName<FormItems>
-        required: boolean
-        pristine: Pristine
-        valid: Valid
-        errorText: string
-        [key: string]: any
-        [key: number]: any
-      }
-    }[Extract<keyof FormItems, number>]
-  >
+  items!: Array<Item<FormItems>>
 
   $errorText: ErrorText = ''
 
@@ -88,11 +88,13 @@ export class Form<
     this.$errorText = errorText
   }
 
-  getItemByName(name: FormName<FormItems>) {
+  getItemByName(name: FormName<FormItems>): Item<FormItems> | undefined {
     return this.items.find(item => item.name === name)
   }
 
-  getItemById(id: FormId<FormItems> | FormName<FormItems>) {
+  getItemById(
+    id: FormId<FormItems> | FormName<FormItems>,
+  ): Item<FormItems> | undefined {
     return this.items.find(item => item.id === id)
   }
 
