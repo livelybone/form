@@ -245,9 +245,9 @@ export class Form<
   }
 
   /**
-   * @desc 重置表单
+   * @desc 重置表单。会更新表单的初始值，如果不想更新初始值，请使用 itemsChange
    *
-   * @desc Reset form
+   * @desc Reset form. The initialValues of the form will be update. If you do not want to update the initialValues, use itemsChange
    *
    * @params values             Default: this.options.initialValues
    * */
@@ -265,9 +265,9 @@ export class Form<
   }
 
   /**
-   * @desc 用参数 value 的值重置与参数 name 对应的表单项
+   * @desc 用参数 value 的值重置与参数 name 对应的表单项。会更新表单项的初始值
    *
-   * @desc Reset form item that matched the param name with the param value
+   * @desc Reset form item that matched the param name with the param value. The initial value of the form item will be update
    *
    * @params name
    * @params value              Default: this.options.initialValues[name]
@@ -287,6 +287,9 @@ export class Form<
           })
         : value
       this.data[item.name as keyof FormItemsData<FormItems>] = item.value
+      this.options.initialValues[
+        item.name as keyof Partial<FormItemsData<FormItems>>
+      ] = value
 
       clearValidateRes(item)
 
