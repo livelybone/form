@@ -37,7 +37,7 @@ export class Form<
 
   $errorText: ErrorText = ''
 
-  private readonly options: Required<
+  readonly options: Required<
     FormOptions<
       FormItemsData<FormItems>,
       ReturnTypeOfSubmit | FormItemsData<FormItems>

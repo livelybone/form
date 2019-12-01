@@ -246,7 +246,14 @@ declare class Form<
 
   $errorText: ErrorText
 
-  private readonly options
+  readonly options: Required<
+    FormOptions<
+      FormItemsData<FormItems>,
+      ReturnTypeOfSubmit | FormItemsData<FormItems>
+    > & {
+      initialValues: FormItemsData<FormItems>
+    }
+  >
 
   constructor(
     formItems: FormItems,
