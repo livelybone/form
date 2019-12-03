@@ -34,10 +34,8 @@ export function itemChange<
 
   const { validateOnChange = options.validateOnChange } = item
   if (validateOnChange) itemValidate(item, formData, options)
-  else {
-    item.pristine = false
-    item.errorText = ''
-  }
+  item.pristine = false
+  item.errorText = ''
 }
 
 export function init<
