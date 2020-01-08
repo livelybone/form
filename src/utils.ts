@@ -6,7 +6,7 @@ export function itemValidate<
   Options extends Required<FormOptions<any, any>>
 >(item: Item, formData: FormData, options: Options) {
   item.errorText =
-    item.required !== false && !item.value
+    item.required !== false && !item.value && item.value !== 0
       ? options.emptyErrorTemplate.replace('{label}', item.label || '')
       : item.validator
       ? item.validator(item.value, {
