@@ -48,10 +48,6 @@ export interface FormItem<
   /**
    * Default: true
    * */
-  required?: boolean
-  /**
-   * Default: true
-   * */
   pristine?: Pristine
   /**
    * Default: true
@@ -63,6 +59,23 @@ export interface FormItem<
   errorText?: string
 
   validateOnChange?: ValidateOnChange
+  /**
+   * Default: true
+   * */
+  required?: boolean
+  /**
+   * 用于动态计算表单项是否必填，优先级高于 required
+   *
+   * @params formDataAndOptions           form.options.optionsForValidatorAndFormatter 与 form.data 的结合
+   *
+   *
+   * It is used to calculate the required property of the form item, with a priority higher than `required` key
+   *
+   * @options formDataAndOptions          The combination of `form.options.optionsForValidatorAndFormatter` and `form.data`
+   *
+   * Default: undefined
+   * */
+  calcRequired?(formDataAndOptions: any): boolean
 
   /**
    * 这个表单项的校验函数
@@ -174,6 +187,7 @@ export interface FormOptions<DT extends {}, ST extends any> {
    * Called in Form.prototype.submit
    * */
   onSubmit?(data: DT): Promise<ST>
+
   /**
    * 目标组件更新的方法，比如 React 组件的 forceUpdate 方法和 Vue 组件的 $forceUpdate 方法
    *

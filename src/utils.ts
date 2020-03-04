@@ -5,14 +5,19 @@ export function itemValidate<
   FormData extends any,
   Options extends Required<FormOptions<any, any>>
 >(item: Item, formData: FormData, options: Options) {
+  const $options = {
+    ...formData,
+    ...options.optionsForValidatorAndFormatter,
+  }
+  const required = item.calcRequired
+    ? item.calcRequired($options)
+    : item.required
+
   item.errorText =
-    item.required !== false && !item.value && item.value !== 0
+    required !== false && !item.value && item.value !== 0
       ? options.emptyErrorTemplate.replace('{label}', item.label || '')
       : item.validator
-      ? item.validator(item.value, {
-          ...formData,
-          ...options.optionsForValidatorAndFormatter,
-        })
+      ? item.validator(item.value, $options)
       : ''
   item.valid = !item.errorText
 
