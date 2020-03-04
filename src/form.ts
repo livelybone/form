@@ -116,7 +116,8 @@ export class Form<
       this.errorText = ''
       if (shouldUpdateComp && this.options.componentUpdateFn)
         this.options.componentUpdateFn()
-    } else console.error("Form: The name isn't exist in this form")
+    } else
+      console.error(new Error(`The name \`${name}\` isn't exist in this form`))
   }
 
   /**
@@ -295,7 +296,8 @@ export class Form<
 
       if (shouldUpdateComp && this.options.componentUpdateFn)
         this.options.componentUpdateFn()
-    } else console.error("Form: The name isn't exist in this form")
+    } else
+      console.error(new Error(`The name \`${name}\` isn't exist in this form`))
   }
 
   /**
@@ -314,7 +316,10 @@ export class Form<
       const item = this.getItemByName(name)
       if (item) {
         clearValidateRes(item)
-      } else console.error("Form: The name isn't exist in this form")
+      } else
+        console.error(
+          new Error(`The name \`${name}\` isn't exist in this form`),
+        )
     } else {
       this.items.forEach(clearValidateRes)
     }
@@ -351,5 +356,19 @@ export class Form<
     }
     this.options.componentUpdateFn =
       options.componentUpdateFn || this.options.componentUpdateFn
+  }
+
+  getItemRequired(name: FormName<FormItems>) {
+    const item = this.getItemByName(name)
+    if (item) {
+      return item.calcRequired
+        ? item.calcRequired({
+            ...this.data,
+            ...this.options.optionsForValidatorAndFormatter,
+          })
+        : item.required !== false
+    }
+    console.error(new Error(`The name \`${name}\` isn't exist in this form`))
+    return false
   }
 }

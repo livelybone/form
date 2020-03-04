@@ -428,6 +428,8 @@ declare class Form<
       ReturnTypeOfSubmit | FormItemsData<FormItems>
     >,
   ): void
+
+  getItemRequired(name: FormName<FormItems>): boolean
 }
 
 declare class FormItemsManager<
