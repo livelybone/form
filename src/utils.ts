@@ -9,12 +9,9 @@ export function itemValidate<
     ...formData,
     ...options.optionsForValidatorAndFormatter,
   }
-  const required = item.calcRequired
-    ? item.calcRequired($options)
-    : item.required
 
   item.errorText =
-    required !== false && !item.value && item.value !== 0
+    item.required && !item.value && item.value !== 0
       ? options.emptyErrorTemplate.replace('{label}', item.label || '')
       : item.validator
       ? item.validator(item.value, $options)
@@ -36,6 +33,9 @@ export function itemChange<
         ...options.optionsForValidatorAndFormatter,
       })
     : value
+
+  // 更新 data
+  formData[item.name] = item.value
 
   const { validateOnChange = options.validateOnChange } = item
   if (validateOnChange) itemValidate(item, formData, options)
@@ -67,8 +67,8 @@ export function init<
     return {
       ...item,
       id: item.id || item.name,
-      value,
       required: item.required !== undefined ? item.required : true,
+      value,
       pristine: true,
       valid: true,
       errorText: '',

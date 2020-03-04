@@ -69,7 +69,7 @@ export interface FormItem<
    * @params formDataAndOptions           form.options.optionsForValidatorAndFormatter 与 form.data 的结合
    *
    *
-   * It is used to calculate the required property of the form item, with a priority higher than `required` key
+   * It is used to calculate the required property of the form item dynamically, with a priority higher than `required` key
    *
    * @options formDataAndOptions          The combination of `form.options.optionsForValidatorAndFormatter` and `form.data`
    *

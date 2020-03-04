@@ -67,7 +67,7 @@ interface FormItem<
    * @params formDataAndOptions           form.options.optionsForValidatorAndFormatter 与 form.data 的结合
    *
    *
-   * It is used to calculate the required property of the form item, with a priority higher than `required` key
+   * It is used to calculate the required property of the form item dynamically, with a priority higher than `required` key
    *
    * @options formDataAndOptions          The combination of `form.options.optionsForValidatorAndFormatter` and `form.data`
    *
@@ -261,7 +261,7 @@ declare class Form<
    *
    * @desc Array of form items
    * */
-  items: Array<Item<FormItems>>
+  items: Item<FormItems>[]
 
   $errorText: ErrorText
 
@@ -422,14 +422,21 @@ declare class Form<
     shouldUpdateComp?: ShouldUpdateComponent,
   ): void
 
+  private $updateOptions
+
+  /**
+   * 应在 this.options.optionsForValidatorAndFormatter 或者 this.data 发生变化时更新 required 值
+   *
+   * The required value of form item should be updated after the `this.options.optionsForValidatorAndFormatter` and `this.data` changed
+   * */
+  updateItemsRequired(): void
+
   updateOptions(
     options: FormOptions<
       FormItemsData<FormItems>,
       ReturnTypeOfSubmit | FormItemsData<FormItems>
     >,
   ): void
-
-  getItemRequired(name: FormName<FormItems>): boolean
 }
 
 declare class FormItemsManager<

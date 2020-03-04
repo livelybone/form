@@ -33,7 +33,7 @@ export class Form<
    *
    * @desc Array of form items
    * */
-  items!: Array<Item<FormItems>>
+  items!: Item<FormItems>[]
 
   $errorText: ErrorText = ''
 
@@ -51,11 +51,12 @@ export class Form<
       ReturnTypeOfSubmit | FormItemsData<FormItems>
     > = {},
   ) {
-    this.updateOptions(options)
+    this.$updateOptions(options)
     const itemsAndData = init(formItems, this.options)
     this.items = itemsAndData.items
     this.data = itemsAndData.data
-    this.updateOptions({ initialValues: this.data })
+    this.$updateOptions({ initialValues: this.data })
+    this.updateItemsRequired()
   }
 
   /**
@@ -110,8 +111,10 @@ export class Form<
   ): void {
     const item = this.getItemByName(name)
     if (item) {
+      const oldValue = item.value
       itemChange(item, value, this.data, this.options)
-      this.data[item.name as keyof FormItemsData<FormItems>] = item.value
+
+      if (oldValue !== item.value) this.updateItemsRequired()
 
       this.errorText = ''
       if (shouldUpdateComp && this.options.componentUpdateFn)
@@ -131,12 +134,20 @@ export class Form<
     },
     shouldUpdateComp: ShouldUpdateComponent = true,
   ): void {
+    let shouldUpdateRequired = false
     this.items.forEach(item => {
       const name = item.name as FormName<FormItems>
-      if (name in values)
+      if (name in values) {
+        const oldValue = item.value
         itemChange(item, values[name], this.data, this.options)
-      this.data[item.name as keyof FormItemsData<FormItems>] = item.value
+        shouldUpdateRequired = shouldUpdateRequired || oldValue !== item.value
+      }
     })
+
+    if (shouldUpdateRequired) {
+      this.updateItemsRequired()
+    }
+
     this.errorText = ''
     if (shouldUpdateComp && this.options.componentUpdateFn)
       this.options.componentUpdateFn()
@@ -256,10 +267,12 @@ export class Form<
     values: Partial<FormItemsData<FormItems>> = this.options.initialValues,
     shouldUpdateComp: ShouldUpdateComponent = true,
   ): void {
-    this.updateOptions({ initialValues: values })
+    this.$updateOptions({ initialValues: values })
     const itemsAndData = init(this.items as FormItems, this.options)
     this.items = itemsAndData.items
     this.data = itemsAndData.data
+
+    this.updateItemsRequired()
 
     if (shouldUpdateComp && this.options.componentUpdateFn)
       this.options.componentUpdateFn()
@@ -280,6 +293,7 @@ export class Form<
   ): void {
     const item = this.getItemByName(name)
     if (item) {
+      const oldValue = item.value
       item.pristine = true
       item.value = item.formatter
         ? item.formatter(value, {
@@ -291,6 +305,8 @@ export class Form<
       this.options.initialValues[
         item.name as keyof Partial<FormItemsData<FormItems>>
       ] = value
+
+      if (oldValue !== item.value) this.updateItemsRequired()
 
       clearValidateRes(item)
 
@@ -328,7 +344,7 @@ export class Form<
       this.options.componentUpdateFn()
   }
 
-  updateOptions(
+  private $updateOptions(
     options: FormOptions<
       FormItemsData<FormItems>,
       ReturnTypeOfSubmit | FormItemsData<FormItems>
@@ -358,17 +374,41 @@ export class Form<
       options.componentUpdateFn || this.options.componentUpdateFn
   }
 
-  getItemRequired(name: FormName<FormItems>) {
-    const item = this.getItemByName(name)
-    if (item) {
-      return item.calcRequired
-        ? item.calcRequired({
-            ...this.data,
-            ...this.options.optionsForValidatorAndFormatter,
-          })
-        : item.required !== false
+  /**
+   * 应在 this.options.optionsForValidatorAndFormatter 或者 this.data 发生变化时更新 required 值
+   *
+   * The required value of form item should be updated after the `this.options.optionsForValidatorAndFormatter` and `this.data` changed
+   * */
+  updateItemsRequired() {
+    const $options = {
+      ...this.options.optionsForValidatorAndFormatter,
+      ...this.data,
     }
-    console.error(new Error(`The name \`${name}\` isn't exist in this form`))
-    return false
+    this.items.forEach(item => {
+      item.required = item.calcRequired
+        ? item.calcRequired($options)
+        : item.required !== undefined
+        ? item.required
+        : true
+    })
+  }
+
+  updateOptions(
+    options: FormOptions<
+      FormItemsData<FormItems>,
+      ReturnTypeOfSubmit | FormItemsData<FormItems>
+    >,
+  ) {
+    this.$updateOptions(options)
+    if (
+      options.optionsForValidatorAndFormatter &&
+      Object.keys(options.optionsForValidatorAndFormatter).some(
+        k =>
+          options.optionsForValidatorAndFormatter![k] !==
+          this.options.optionsForValidatorAndFormatter[k],
+      )
+    ) {
+      this.updateItemsRequired()
+    }
   }
 }
