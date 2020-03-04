@@ -87,6 +87,11 @@ interface FormItem<
    * Default: val => val
    * */
   formatter?(value: ValueType, formDataAndOptions: any): ValueType
+
+  /**
+   * Other keys
+   * */
+  [key: string]: any
 }
 
 interface FormOptions<DT extends {}, ST extends any> {
