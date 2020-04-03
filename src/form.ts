@@ -399,16 +399,14 @@ export class Form<
       ReturnTypeOfSubmit | FormItemsData<FormItems>
     >,
   ) {
-    this.$updateOptions(options)
-    if (
+    const shouldUpdateItemsRequired =
       options.optionsForValidatorAndFormatter &&
       Object.keys(options.optionsForValidatorAndFormatter).some(
         k =>
           options.optionsForValidatorAndFormatter![k] !==
           this.options.optionsForValidatorAndFormatter[k],
       )
-    ) {
-      this.updateItemsRequired()
-    }
+    this.$updateOptions(options)
+    if (shouldUpdateItemsRequired) this.updateItemsRequired()
   }
 }
