@@ -1,10 +1,9 @@
-import { FormItem, FormItemsData, FormOptions } from './type'
+import { FormItem, FormItemsData, FullFormOptions } from './type'
 
 export function itemValidate<
   Item extends FormItem<any, any, any>,
-  FormData extends any,
-  Options extends Required<FormOptions<any, any>>
->(item: Item, formData: FormData, options: Options) {
+  Options extends FullFormOptions<any, any>
+>(item: Item, formData: any, options: Options) {
   const $options = {
     ...formData,
     ...options.optionsForValidatorAndFormatter,
@@ -23,10 +22,8 @@ export function itemValidate<
 
 export function itemChange<
   Item extends FormItem<any, any, any>,
-  Value extends any,
-  FormData extends any,
-  Options extends Required<FormOptions<any, any>>
->(item: Item, value: Value, formData: FormData, options: Options) {
+  Options extends FullFormOptions<any, any>
+>(item: Item, value: Item['value'], formData: any, options: Options) {
   item.value = item.formatter
     ? item.formatter(value, {
         ...formData,
@@ -45,7 +42,7 @@ export function itemChange<
 
 export function init<
   Items extends FormItem<any, any, any>[],
-  Options extends Required<FormOptions<any, any>>
+  Options extends FullFormOptions<any, any>
 >(items: Items, options: Options) {
   const values = { ...options.initialValues }
 
@@ -72,6 +69,7 @@ export function init<
       pristine: true,
       valid: true,
       errorText: '',
+      validateOnChange: item.validateOnChange || false,
     }
   })
   return { data, items: $items }

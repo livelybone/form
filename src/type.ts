@@ -1,3 +1,5 @@
+import { IsTuple, TupleToUnion, UnionPop } from 'union-tuple'
+
 export type ErrorText = string
 
 /**
@@ -63,6 +65,7 @@ export interface FormItem<
    * Default: true
    * */
   required?: boolean
+
   /**
    * 用于动态计算表单项是否必填，优先级高于 required
    *
@@ -108,6 +111,22 @@ export interface FormItem<
    * Other keys
    * */
   [key: string]: any
+}
+
+export interface FullFormItem<
+  ValueType extends any,
+  NameType extends string | number,
+  IdType extends string | number
+> extends FormItem<ValueType, NameType, IdType> {
+  readonly name: NameType
+  readonly id: NonNullable<IdType | NameType>
+  value: ValueType
+
+  pristine: Pristine
+  valid: Valid
+  errorText: ErrorText
+  validateOnChange: ValidateOnChange
+  required: boolean
 }
 
 export interface FormOptions<DT extends {}, ST extends any> {
@@ -196,39 +215,62 @@ export interface FormOptions<DT extends {}, ST extends any> {
   componentUpdateFn?(): void
 }
 
-export type TupleToUnion<
-  T,
-  K extends string,
-  FallbackType = any
-> = T extends Array<{ [k in K]: infer E }>
+export interface FullFormOptions<DT extends {}, ST extends any>
+  extends FormOptions<DT, ST> {
+  initialValues: DT
+  validateAll: boolean
+  validateOnChange: ValidateOnChange
+  emptyErrorTemplate: string
+}
+
+export type FormProp<T, K extends string, FallbackType = any> = T extends {
+  [k in K]: infer E
+}[]
   ? unknown extends E
     ? FallbackType
     : E
   : FallbackType
 
-export type FormName<
-  FormItems extends FormItem<any, any, any>[]
-> = TupleToUnion<FormItems, 'name', string | number>
-export type FormValue<
-  FormItems extends FormItem<any, any, any>[]
-> = TupleToUnion<FormItems, 'value', any>
-export type FormId<FormItems extends FormItem<any, any, any>[]> = TupleToUnion<
+export type FormName<FormItems extends FormItem<any, any, any>[]> = FormProp<
+  FormItems,
+  'name',
+  string | number
+>
+export type FormValue<FormItems extends FormItem<any, any, any>[]> = FormProp<
+  FormItems,
+  'value',
+  any
+>
+export type FormId<FormItems extends FormItem<any, any, any>[]> = FormProp<
   FormItems,
   'id',
   string | number
 >
 
+type R<FormItemUnion, Result extends {} = {}> = {
+  1: Result
+  0: R<
+    Exclude<FormItemUnion, UnionPop<FormItemUnion>>,
+    Result &
+      (UnionPop<FormItemUnion> extends { name: infer Name; value: infer Value }
+        ? Name extends string | number
+          ? { [k in Name]: Value }
+          : any
+        : any)
+  > extends infer R
+    ? R
+    : {}
+}[[FormItemUnion] extends [never] ? 1 : 0]
+
 export type FormItemsData<
   FormItems extends FormItem<any, string | number, string | number>[]
-> = {
-  [k in FormName<FormItems>]: FormValue<FormItems>
-}
-
-export type TupleUnion<T> = T extends (infer E)[]
+> = (IsTuple<FormItems> extends true
+  ? R<TupleToUnion<FormItems>>
+  : R<FormItems[0]>) extends infer E
   ? unknown extends E
-    ? never
+    ? any
     : E
-  : never
+  : any
 
 /**
  * 是否要更新组件

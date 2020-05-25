@@ -6,6 +6,8 @@ import {
   FormName,
   FormOptions,
   FormValue,
+  FullFormItem,
+  FullFormOptions,
   Pristine,
   ShouldUpdateComponent,
   Valid,
@@ -13,20 +15,17 @@ import {
 import { clearValidateRes, init, itemChange, itemValidate } from './utils'
 
 type Item<FormItems extends any[]> = {
-  [index in Extract<keyof FormItems, number>]: FormItems[index] & {
-    id: FormId<FormItems> | FormName<FormItems>
-    required: boolean
-    pristine: Pristine
-    valid: Valid
-    errorText: string
-    [key: string]: any
-    [key: number]: any
-  }
+  [index in Extract<keyof FormItems, number>]: FormItems[index] &
+    FullFormItem<
+      FormItems[index]['value'],
+      FormItems[index]['name'],
+      FormItems[index]['id'] | FormItems[index]['name']
+    >
 }[Extract<keyof FormItems, number>]
 
 export class Form<
   FormItems extends FormItem<any, any, any>[],
-  ReturnTypeOfSubmit extends any
+  ReturnTypeOfSubmit extends any = FormItemsData<FormItems>
 > {
   /**
    * @desc 表单项数组
@@ -38,18 +37,12 @@ export class Form<
   $errorText: ErrorText = ''
 
   readonly options: Required<
-    FormOptions<
-      FormItemsData<FormItems>,
-      ReturnTypeOfSubmit | FormItemsData<FormItems>
-    > & { initialValues: FormItemsData<FormItems> }
+    FullFormOptions<FormItemsData<FormItems>, ReturnTypeOfSubmit>
   > = {} as any
 
   constructor(
     formItems: FormItems,
-    options: FormOptions<
-      FormItemsData<FormItems>,
-      ReturnTypeOfSubmit | FormItemsData<FormItems>
-    > = {},
+    options: FormOptions<FormItemsData<FormItems>, ReturnTypeOfSubmit> = {},
   ) {
     this.$updateOptions(options)
     const itemsAndData = init(formItems, this.options)
@@ -129,9 +122,7 @@ export class Form<
    * @desc Batch updates with the values of form items
    * */
   itemsChange(
-    values: {
-      [k in FormName<FormItems>]: FormValue<FormItems>
-    },
+    values: Partial<FormItemsData<FormItems>>,
     shouldUpdateComp: ShouldUpdateComponent = true,
   ): void {
     let shouldUpdateRequired = false
@@ -242,7 +233,7 @@ export class Form<
    * */
   submit(
     shouldUpdateComp: ShouldUpdateComponent = true,
-  ): Promise<ReturnTypeOfSubmit | FormItemsData<FormItems>> {
+  ): Promise<ReturnTypeOfSubmit> {
     // reset the $errorText prop
     this.errorText = ''
 
@@ -253,7 +244,7 @@ export class Form<
     ).finally(() => {
       if (shouldUpdateComp && this.options.componentUpdateFn)
         this.options.componentUpdateFn()
-    })
+    }) as any
   }
 
   /**
@@ -345,10 +336,7 @@ export class Form<
   }
 
   private $updateOptions(
-    options: FormOptions<
-      FormItemsData<FormItems>,
-      ReturnTypeOfSubmit | FormItemsData<FormItems>
-    >,
+    options: FormOptions<FormItemsData<FormItems>, ReturnTypeOfSubmit>,
   ) {
     this.options.onSubmit =
       options.onSubmit ||
@@ -394,10 +382,7 @@ export class Form<
   }
 
   updateOptions(
-    options: FormOptions<
-      FormItemsData<FormItems>,
-      ReturnTypeOfSubmit | FormItemsData<FormItems>
-    >,
+    options: FormOptions<FormItemsData<FormItems>, ReturnTypeOfSubmit>,
   ) {
     const shouldUpdateItemsRequired =
       options.optionsForValidatorAndFormatter &&

@@ -1,3 +1,11 @@
+import {
+  IsTuple,
+  TupleMap,
+  TupleToUnion,
+  UnionPop,
+  UnionToTupleWithMap,
+} from 'union-tuple'
+
 declare type ErrorText = string
 /**
  * 表示表单/表单项是否被修改，true - 未被修改过，false - 已被修改过
@@ -108,6 +116,21 @@ interface FormItem<
   [key: string]: any
 }
 
+interface FullFormItem<
+  ValueType extends any,
+  NameType extends string | number,
+  IdType extends string | number
+> extends FormItem<ValueType, NameType, IdType> {
+  readonly name: NameType
+  readonly id: NonNullable<IdType | NameType>
+  value: ValueType
+  pristine: Pristine
+  valid: Valid
+  errorText: ErrorText
+  validateOnChange: ValidateOnChange
+  required: boolean
+}
+
 interface FormOptions<DT extends {}, ST extends any> {
   initialValues?: Partial<DT>
   /**
@@ -197,40 +220,64 @@ interface FormOptions<DT extends {}, ST extends any> {
   componentUpdateFn?(): void
 }
 
-declare type TupleToUnion<
-  T,
-  K extends string,
-  FallbackType = any
-> = T extends Array<
-  {
-    [k in K]: infer E
-  }
->
+interface FullFormOptions<DT extends {}, ST extends any>
+  extends FormOptions<DT, ST> {
+  initialValues: DT
+  validateAll: boolean
+  validateOnChange: ValidateOnChange
+  emptyErrorTemplate: string
+}
+
+declare type FormProp<T, K extends string, FallbackType = any> = T extends {
+  [k in K]: infer E
+}[]
   ? unknown extends E
     ? FallbackType
     : E
   : FallbackType
-declare type FormName<
-  FormItems extends FormItem<any, any, any>[]
-> = TupleToUnion<FormItems, 'name', string | number>
-declare type FormValue<
-  FormItems extends FormItem<any, any, any>[]
-> = TupleToUnion<FormItems, 'value', any>
-declare type FormId<FormItems extends FormItem<any, any, any>[]> = TupleToUnion<
+declare type FormName<FormItems extends FormItem<any, any, any>[]> = FormProp<
+  FormItems,
+  'name',
+  string | number
+>
+declare type FormValue<FormItems extends FormItem<any, any, any>[]> = FormProp<
+  FormItems,
+  'value',
+  any
+>
+declare type FormId<FormItems extends FormItem<any, any, any>[]> = FormProp<
   FormItems,
   'id',
   string | number
 >
+declare type R<FormItemUnion, Result extends {} = {}> = {
+  1: Result
+  0: R<
+    Exclude<FormItemUnion, UnionPop<FormItemUnion>>,
+    Result &
+      (UnionPop<FormItemUnion> extends {
+        name: infer Name
+        value: infer Value
+      }
+        ? Name extends string | number
+          ? {
+              [k in Name]: Value
+            }
+          : any
+        : any)
+  > extends infer R
+    ? R
+    : {}
+}[[FormItemUnion] extends [never] ? 1 : 0]
 declare type FormItemsData<
   FormItems extends FormItem<any, string | number, string | number>[]
-> = {
-  [k in FormName<FormItems>]: FormValue<FormItems>
-}
-declare type TupleUnion<T> = T extends (infer E)[]
+> = (IsTuple<FormItems> extends true
+  ? R<TupleToUnion<FormItems>>
+  : R<FormItems[0]>) extends infer E
   ? unknown extends E
-    ? never
+    ? any
     : E
-  : never
+  : any
 /**
  * 是否要更新组件
  *
@@ -241,20 +288,17 @@ declare type TupleUnion<T> = T extends (infer E)[]
 declare type ShouldUpdateComponent = boolean
 
 declare type Item<FormItems extends any[]> = {
-  [index in Extract<keyof FormItems, number>]: FormItems[index] & {
-    id: FormId<FormItems> | FormName<FormItems>
-    required: boolean
-    pristine: Pristine
-    valid: Valid
-    errorText: string
-    [key: string]: any
-    [key: number]: any
-  }
+  [index in Extract<keyof FormItems, number>]: FormItems[index] &
+    FullFormItem<
+      FormItems[index]['value'],
+      FormItems[index]['name'],
+      FormItems[index]['id'] | FormItems[index]['name']
+    >
 }[Extract<keyof FormItems, number>]
 
 declare class Form<
   FormItems extends FormItem<any, any, any>[],
-  ReturnTypeOfSubmit extends any
+  ReturnTypeOfSubmit extends any = FormItemsData<FormItems>
 > {
   /**
    * @desc 表单项数组
@@ -266,20 +310,12 @@ declare class Form<
   $errorText: ErrorText
 
   readonly options: Required<
-    FormOptions<
-      FormItemsData<FormItems>,
-      ReturnTypeOfSubmit | FormItemsData<FormItems>
-    > & {
-      initialValues: FormItemsData<FormItems>
-    }
+    FullFormOptions<FormItemsData<FormItems>, ReturnTypeOfSubmit>
   >
 
   constructor(
     formItems: FormItems,
-    options?: FormOptions<
-      FormItemsData<FormItems>,
-      ReturnTypeOfSubmit | FormItemsData<FormItems>
-    >,
+    options?: FormOptions<FormItemsData<FormItems>, ReturnTypeOfSubmit>,
   )
 
   /**
@@ -289,16 +325,18 @@ declare class Form<
    * */
   data: FormItemsData<FormItems>
 
-  readonly pristine: Pristine
+  get pristine(): Pristine
 
-  readonly valid: Valid
+  get valid(): Valid
 
   /**
    * @desc 当前表单应该显示的错误信息
    *
    * @desc The current errorText of the form
    * */
-  errorText: ErrorText
+  get errorText(): ErrorText
+
+  set errorText(errorText: ErrorText)
 
   getItemByName(name: FormName<FormItems>): Item<FormItems> | undefined
 
@@ -323,9 +361,7 @@ declare class Form<
    * @desc Batch updates with the values of form items
    * */
   itemsChange(
-    values: {
-      [k in FormName<FormItems>]: FormValue<FormItems>
-    },
+    values: Partial<FormItemsData<FormItems>>,
     shouldUpdateComp?: ShouldUpdateComponent,
   ): void
 
@@ -379,9 +415,7 @@ declare class Form<
    *
    * @desc Method formValidate will be called before run the onSubmit function in this method
    * */
-  submit(
-    shouldUpdateComp?: ShouldUpdateComponent,
-  ): Promise<ReturnTypeOfSubmit | FormItemsData<FormItems>>
+  submit(shouldUpdateComp?: ShouldUpdateComponent): Promise<ReturnTypeOfSubmit>
 
   /**
    * @desc 重置表单。会更新表单的初始值，如果不想更新初始值，请使用 itemsChange
@@ -432,41 +466,53 @@ declare class Form<
   updateItemsRequired(): void
 
   updateOptions(
-    options: FormOptions<
-      FormItemsData<FormItems>,
-      ReturnTypeOfSubmit | FormItemsData<FormItems>
-    >,
+    options: FormOptions<FormItemsData<FormItems>, ReturnTypeOfSubmit>,
   ): void
 }
+
+declare type InfiniteItems<
+  FormItems extends {
+    [id: string]: FormItem<any, any, any>
+  },
+  Ids extends any[]
+> = {
+  [id in TupleToUnion<Ids>]: FormItemsManager<FormItems>['allItems'][id]
+}[TupleToUnion<Ids>][]
+declare type GetFormItems<
+  FormItems extends {
+    [id: string]: FormItem<any, any, any>
+  },
+  Ids extends any[]
+> = (IsTuple<Ids> extends true
+  ? TupleMap<Ids, FormItemsManager<FormItems>['allItems']>
+  : UnionToTupleWithMap<
+      Ids[0],
+      FormItemsManager<FormItems>['allItems']
+    >) extends infer E
+  ? unknown extends E
+    ? InfiniteItems<FormItems, Ids>
+    : E
+  : InfiniteItems<FormItems, Ids>
 
 declare class FormItemsManager<
   FormItems extends {
     [id: string]: FormItem<any, any, any>
   }
 > {
-  private readonly allItems
+  readonly allItems: {
+    [id in Exclude<keyof FormItems, symbol>]: FormItems[id] &
+      FormItem<FormItems[id]['value'], FormItems[id]['name'], id>
+  }
 
   constructor(formItems: FormItems)
 
-  getItem<Id extends keyof FormItems>(
+  getItem<Id extends keyof FormItemsManager<FormItems>['allItems']>(
     id: Id,
-  ): {
-    [id in keyof FormItems]: FormItems[id] & {
-      [key: string]: any
-      [key: number]: any
-      id: id
-    }
-  }[Id]
+  ): FormItemsManager<FormItems>['allItems'][Id]
 
-  getItems<Ids extends (keyof FormItems)[]>(
+  getItems<Ids extends (keyof FormItemsManager<FormItems>['allItems'])[]>(
     ids: Ids,
-  ): {
-    [id in TupleUnion<Ids>]: FormItems[id] & {
-      [key: string]: any
-      [key: number]: any
-      id: id
-    }
-  }[TupleUnion<Ids>][]
+  ): GetFormItems<FormItems, Ids>
 }
 
 export {
@@ -478,11 +524,12 @@ export {
   FormItemsManager,
   FormName,
   FormOptions,
+  FormProp,
   FormValue,
+  FullFormItem,
+  FullFormOptions,
   Pristine,
   ShouldUpdateComponent,
-  TupleToUnion,
-  TupleUnion,
   Valid,
   ValidateOnChange,
 }
