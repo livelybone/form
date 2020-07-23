@@ -374,7 +374,7 @@ export class Form<
     }
     this.items.forEach(item => {
       item.required = item.calcRequired
-        ? item.calcRequired($options)
+        ? !!item.calcRequired($options)
         : item.required !== undefined
         ? item.required
         : true
