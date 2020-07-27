@@ -205,7 +205,7 @@ export interface FormOptions<DT extends {}, ST extends any> {
   /**
    * Called in Form.prototype.submit
    * */
-  onSubmit?(data: DT): Promise<ST>
+  onSubmit?(data: DT): PromiseLike<ST>
 
   /**
    * 目标组件更新的方法，比如 React 组件的 forceUpdate 方法和 Vue 组件的 $forceUpdate 方法

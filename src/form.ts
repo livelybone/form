@@ -239,7 +239,7 @@ export class Form<
 
     const errorText = this.formValidate(this.options.validateAll, false)
     return (!errorText
-      ? this.options.onSubmit(this.data)
+      ? Promise.resolve(this.options.onSubmit(this.data))
       : Promise.reject(new Error(errorText))
     ).finally(() => {
       if (shouldUpdateComp && this.options.componentUpdateFn)
